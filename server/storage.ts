@@ -280,8 +280,8 @@ export class DatabaseStorage implements IStorage {
       })));
   }
 
-  async createSalesData(salesData: InsertSalesData): Promise<SalesData> {
-    const [newSalesData] = await db.insert(salesData).values(salesData).returning();
+  async createSalesData(salesDataInput: InsertSalesData): Promise<SalesData> {
+    const [newSalesData] = await db.insert(salesData).values(salesDataInput).returning();
     return newSalesData;
   }
 
