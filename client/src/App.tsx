@@ -11,6 +11,7 @@ import BudgetManagement from "@/pages/budget-management";
 import Forecasting from "@/pages/forecasting";
 import Deductions from "@/pages/deductions";
 import Analytics from "@/pages/analytics";
+import UserGuide from "@/pages/user-guide";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
           <Route path="/forecasting" component={Forecasting} />
           <Route path="/deductions" component={Deductions} />
           <Route path="/analytics" component={Analytics} />
+          <Route path="/guide" component={UserGuide} />
         </>
       )}
       <Route component={NotFound} />

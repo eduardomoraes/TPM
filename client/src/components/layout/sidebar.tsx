@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import { TrendingUp, Calendar, DollarSign, BarChart3, Receipt, Settings, Target } from "lucide-react";
+import { TrendingUp, Calendar, DollarSign, BarChart3, Receipt, Settings, Target, BookOpen } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -17,6 +17,7 @@ export default function Sidebar() {
     { name: "Forecasting", href: "/forecasting", icon: BarChart3, current: location === "/forecasting" },
     { name: "Deductions", href: "/deductions", icon: Receipt, current: location === "/deductions" },
     { name: "Analytics & ROI", href: "/analytics", icon: Target, current: location === "/analytics" },
+    { name: "User Guide", href: "/guide", icon: BookOpen, current: location === "/guide" },
     { name: "Settings", href: "/settings", icon: Settings, current: location === "/settings" },
   ];
 
