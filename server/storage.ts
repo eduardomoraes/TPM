@@ -37,6 +37,7 @@ export interface SafeUser {
   lastName: string | null;
   role: string | null;
   department: string | null;
+  phone: string | null;
   isActive: boolean | null;
   lastLogin: Date | null;
   createdAt: Date | null;
@@ -154,6 +155,7 @@ export class DatabaseStorage implements IStorage {
       lastName: user.lastName,
       role: user.role,
       department: user.department,
+      phone: user.phone,
       isActive: user.isActive,
       lastLogin: user.lastLogin,
       createdAt: user.createdAt,
