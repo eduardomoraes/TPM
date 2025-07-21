@@ -211,10 +211,7 @@ export class DatabaseStorage implements IStorage {
       .values({ ...settingsData, userId } as InsertUserSettings)
       .onConflictDoUpdate({
         target: userSettings.userId,
-        set: {
-          ...settingsData,
-          updatedAt: new Date(),
-        },
+        set: settingsData,
       })
       .returning();
     return settings;
