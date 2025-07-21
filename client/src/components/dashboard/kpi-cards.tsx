@@ -3,10 +3,17 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, TrendingUp, Tag, Clock } from "lucide-react";
 
+interface KPIData {
+  tradeSpendYTD: number;
+  averageROI: number;
+  activePromotions: number;
+  pendingDeductions: number;
+}
+
 export default function KPICards() {
   const { isAuthenticated } = useAuth();
 
-  const { data: kpis, isLoading } = useQuery({
+  const { data: kpis, isLoading } = useQuery<KPIData>({
     queryKey: ["/api/dashboard/kpis"],
     enabled: isAuthenticated,
   });
