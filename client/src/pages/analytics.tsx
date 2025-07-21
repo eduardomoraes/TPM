@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, createContext, useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import Sidebar from "@/components/layout/sidebar";
@@ -7,12 +7,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import ROIChart from "@/components/dashboard/roi-chart";
-import { TrendingUp, DollarSign, Target, BarChart3, PieChart, Users, Layers } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import FilteredROIChart from "@/components/analytics/filtered-roi-chart";
+import { TrendingUp, DollarSign, Target, BarChart3, PieChart, Users, Layers, Filter, X } from "lucide-react";
+import type { Promotion, Account, Product, SalesData } from "@shared/schema";
 
-export default function Analytics() {
+// Create a filter context for analytics components
+interface AnalyticsFilterContextType {
+  searchQuery: string;
+  dateRange: string;
+  accountFilter: string;
+  statusFilter: string;
+  applyFilters: (data: any[]) => any[];
+}
+
+const AnalyticsFilterContext = createContext<AnalyticsFilterContextType>({
+  searchQuery: "",
+  dateRange: "all",
+  accountFilter: "all",
+  statusFilter: "all",
+  applyFilters: (data) => data,
+});
+
+function Analytics() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [consolidatedView, setConsolidatedView] = useState<'account' | 'promo-type'>('account');
+  
+  // Filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateRange, setDateRange] = useState("all");
+  const [accountFilter, setAccountFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data: kpis } = useQuery({
     queryKey: ["/api/dashboard/kpis"],
@@ -24,15 +51,104 @@ export default function Analytics() {
     enabled: isAuthenticated,
   });
 
-  const { data: salesData } = useQuery({
+  const { data: salesData } = useQuery<(SalesData & { promotion: Promotion | null; account: Account | null; product: Product | null })[]>({
     queryKey: ["/api/sales-data"],
     enabled: isAuthenticated,
   });
 
-  const { data: allPromotions } = useQuery({
+  const { data: allPromotions } = useQuery<(Promotion & { account: Account | null; product: Product | null })[]>({
     queryKey: ["/api/promotions"],
     enabled: isAuthenticated,
   });
+
+  const { data: accounts } = useQuery<Account[]>({
+    queryKey: ["/api/accounts"],
+    enabled: isAuthenticated,
+  });
+
+  // Filter function to apply master filters to data
+  const applyFilters = useMemo(() => {
+    return (data: any[]) => {
+      if (!data || !Array.isArray(data)) return [];
+      
+      return data.filter((item: any) => {
+        // Search filter
+        if (searchQuery) {
+          const searchFields = [
+            item.name,
+            item.account?.name,
+            item.product?.name,
+            item.promotion?.name,
+            item.type,
+            item.message
+          ].filter(Boolean);
+          
+          if (!searchFields.some(field => 
+            field.toLowerCase().includes(searchQuery.toLowerCase())
+          )) {
+            return false;
+          }
+        }
+        
+        // Account filter
+        if (accountFilter !== 'all') {
+          const itemAccountName = item.account?.name || item.accountName;
+          if (itemAccountName !== accountFilter) {
+            return false;
+          }
+        }
+        
+        // Status filter
+        if (statusFilter !== 'all' && item.status && item.status !== statusFilter) {
+          return false;
+        }
+        
+        // Date range filter
+        if (dateRange !== 'all') {
+          const itemDate = new Date(item.createdAt || item.startDate || item.salesDate || '');
+          const now = new Date();
+          
+          switch (dateRange) {
+            case 'today':
+              if (itemDate.toDateString() !== now.toDateString()) return false;
+              break;
+            case 'week':
+              const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+              if (itemDate < weekAgo) return false;
+              break;
+            case 'month':
+              if (itemDate.getMonth() !== now.getMonth() || itemDate.getFullYear() !== now.getFullYear()) return false;
+              break;
+            case 'quarter':
+              const quarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+              if (itemDate < quarterStart) return false;
+              break;
+            case 'year':
+              if (itemDate.getFullYear() !== now.getFullYear()) return false;
+              break;
+          }
+        }
+        
+        return true;
+      });
+    };
+  }, [searchQuery, dateRange, accountFilter, statusFilter]);
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setDateRange("all");
+    setAccountFilter("all");
+    setStatusFilter("all");
+  };
+
+  // Filter context value
+  const filterContextValue = {
+    searchQuery,
+    dateRange,
+    accountFilter,
+    statusFilter,
+    applyFilters,
+  };
 
   if (authLoading || (!isAuthenticated && authLoading)) {
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
@@ -42,20 +158,29 @@ export default function Analytics() {
     return null;
   }
 
-  // Calculate additional analytics metrics
-  const totalIncrementalSales = salesData?.reduce((sum: number, sale: any) => 
-    sum + (Number(sale.incrementalSales) || 0), 0) || 0;
-  
-  const avgROI = kpis?.averageROI || 0;
-  const totalPromotionsAnalyzed = topPromotions?.length || 0;
+  // Apply filters to data
+  const filteredSalesData = useMemo(() => applyFilters(salesData || []), [salesData, applyFilters]);
+  const filteredPromotions = useMemo(() => applyFilters(allPromotions || []), [allPromotions, applyFilters]);
+  const filteredTopPromotions = useMemo(() => applyFilters(topPromotions || []), [topPromotions, applyFilters]);
 
-  // Consolidated analysis by account
+  // Calculate additional analytics metrics based on filtered data
+  const totalIncrementalSales = filteredSalesData.reduce((sum: number, sale: any) => 
+    sum + (Number(sale.incrementalSales) || 0), 0);
+  
+  const avgROI = filteredSalesData.length > 0 
+    ? filteredSalesData.reduce((sum: number, sale: any) => sum + (Number(sale.roi) || 0), 0) / filteredSalesData.length
+    : (kpis && typeof kpis === 'object' && 'averageROI' in kpis ? (kpis as any).averageROI : 0) || 0;
+    
+  const totalPromotionsAnalyzed = filteredTopPromotions.length;
+  const totalTradeSpend = filteredPromotions.reduce((sum: number, promo: any) => sum + (Number(promo.budget) || 0), 0);
+
+  // Consolidated analysis by account (using filtered data)
   const consolidatedByAccount = useMemo(() => {
-    if (!allPromotions || !salesData) return [];
+    if (!filteredPromotions || !filteredSalesData) return [];
     
     const accountMap = new Map();
     
-    allPromotions.forEach((promo: any) => {
+    filteredPromotions.forEach((promo: any) => {
       const accountName = promo.account?.name || 'Unknown';
       if (!accountMap.has(accountName)) {
         accountMap.set(accountName, {
@@ -74,7 +199,7 @@ export default function Analytics() {
       accountData.promotionCount += 1;
       
       // Find related sales data
-      const relatedSales = salesData.filter((sale: any) => sale.promotion?.accountId === promo.accountId);
+      const relatedSales = filteredSalesData.filter((sale: any) => sale.promotion?.accountId === promo.accountId);
       relatedSales.forEach((sale: any) => {
         accountData.totalSales += Number(sale.incrementalSales) || 0;
         accountData.totalUnitsLift += Number(sale.unitsLift) || 0;
@@ -89,15 +214,15 @@ export default function Analytics() {
     });
     
     return Array.from(accountMap.values()).sort((a: any, b: any) => b.avgROI - a.avgROI);
-  }, [allPromotions, salesData]);
+  }, [filteredPromotions, filteredSalesData]);
 
-  // Consolidated analysis by promo type
+  // Consolidated analysis by promo type (using filtered data)
   const consolidatedByPromoType = useMemo(() => {
-    if (!allPromotions || !salesData) return [];
+    if (!filteredPromotions || !filteredSalesData) return [];
     
     const typeMap = new Map();
     
-    allPromotions.forEach((promo: any) => {
+    filteredPromotions.forEach((promo: any) => {
       const promoType = promo.promotionType || 'Unknown';
       if (!typeMap.has(promoType)) {
         typeMap.set(promoType, {
@@ -117,7 +242,7 @@ export default function Analytics() {
       typeData.accounts.add(promo.account?.name || 'Unknown');
       
       // Find related sales data
-      const relatedSales = salesData.filter((sale: any) => sale.promotionId === promo.id);
+      const relatedSales = filteredSalesData.filter((sale: any) => sale.promotionId === promo.id);
       relatedSales.forEach((sale: any) => {
         typeData.totalSales += Number(sale.incrementalSales) || 0;
         typeData.totalUnitsLift += Number(sale.unitsLift) || 0;
@@ -134,22 +259,132 @@ export default function Analytics() {
     });
     
     return Array.from(typeMap.values()).sort((a: any, b: any) => b.avgROI - a.avgROI);
-  }, [allPromotions, salesData]);
+  }, [filteredPromotions, filteredSalesData]);
 
   const currentConsolidatedData = consolidatedView === 'account' ? consolidatedByAccount : consolidatedByPromoType;
 
   return (
-    <div className="flex h-screen bg-neutral">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-auto p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-900">Analytics & ROI</h2>
-              <p className="text-sm text-gray-600">Comprehensive promotion performance analysis and insights</p>
+    <AnalyticsFilterContext.Provider value={filterContextValue}>
+      <div className="flex h-screen bg-neutral">
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <main className="flex-1 overflow-auto p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">Analytics & ROI</h2>
+                <p className="text-sm text-gray-600">Comprehensive promotion performance analysis and insights</p>
+              </div>
+              
+              {/* Master Filter Toggle */}
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant={showFilters ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center space-x-2"
+                >
+                  <Filter className="h-4 w-4" />
+                  <span>Filters</span>
+                </Button>
+              </div>
             </div>
-          </div>
+
+            {/* Master Filter Panel */}
+            {showFilters && (
+              <Card className="mb-6">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">Filter Analytics Data</CardTitle>
+                    <Button variant="ghost" size="sm" onClick={() => setShowFilters(false)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {/* Search */}
+                    <div className="space-y-2">
+                      <Label htmlFor="search">Search</Label>
+                      <Input
+                        id="search"
+                        placeholder="Search promotions, accounts..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Date Range */}
+                    <div className="space-y-2">
+                      <Label htmlFor="dateRange">Date Range</Label>
+                      <Select value={dateRange} onValueChange={setDateRange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Time</SelectItem>
+                          <SelectItem value="today">Today</SelectItem>
+                          <SelectItem value="week">This Week</SelectItem>
+                          <SelectItem value="month">This Month</SelectItem>
+                          <SelectItem value="quarter">This Quarter</SelectItem>
+                          <SelectItem value="year">This Year</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Account */}
+                    <div className="space-y-2">
+                      <Label htmlFor="account">Account</Label>
+                      <Select value={accountFilter} onValueChange={setAccountFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Accounts" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Accounts</SelectItem>
+                          {accounts?.map((account) => (
+                            <SelectItem key={account.id} value={account.name}>
+                              {account.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Status */}
+                    <div className="space-y-2">
+                      <Label htmlFor="status">Status</Label>
+                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Status</SelectItem>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="planned">Planned</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Filter Actions */}
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                    <div className="text-sm text-gray-600">
+                      {filteredPromotions.length} promotion(s), {filteredSalesData.length} sales record(s) shown
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm" onClick={clearFilters}>
+                        Clear All
+                      </Button>
+                      <Button variant="default" size="sm">
+                        Apply Filters
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
           {/* Analytics KPIs */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -186,8 +421,8 @@ export default function Analytics() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {kpis?.tradeSpendYTD && totalIncrementalSales ? 
-                    (totalIncrementalSales / kpis.tradeSpendYTD * 100).toFixed(0) : 0}%
+                  {totalTradeSpend && totalIncrementalSales ? 
+                    (totalIncrementalSales / totalTradeSpend * 100).toFixed(0) : 0}%
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Revenue per dollar spent
@@ -220,7 +455,7 @@ export default function Analytics() {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <label className="text-sm font-medium">Analyze by:</label>
-                    <Select value={consolidatedView} onValueChange={setConsolidatedView}>
+                    <Select value={consolidatedView} onValueChange={(value: string) => setConsolidatedView(value as 'account' | 'promo-type')}>
                       <SelectTrigger className="w-40">
                         <SelectValue />
                       </SelectTrigger>
@@ -244,7 +479,7 @@ export default function Analytics() {
               </div>
             </CardHeader>
             <CardContent>
-              {currentConsolidatedData.length === 0 ? (
+              {!currentConsolidatedData || currentConsolidatedData.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">No data available for consolidated analysis</p>
                 </div>
@@ -268,7 +503,7 @@ export default function Analytics() {
                       </tr>
                     </thead>
                     <tbody>
-                      {currentConsolidatedData.map((item: any, index: number) => {
+                      {currentConsolidatedData && currentConsolidatedData.map((item: any, index: number) => {
                         const roi = item.avgROI || 0;
                         const displayName = consolidatedView === 'account' ? item.name : item.type;
                         
@@ -311,7 +546,13 @@ export default function Analytics() {
 
           {/* ROI Trend Analysis */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <ROIChart />
+            <FilteredROIChart 
+              filteredSalesData={filteredSalesData}
+              searchQuery={searchQuery}
+              dateRange={dateRange}
+              accountFilter={accountFilter}
+              statusFilter={statusFilter}
+            />
             
             {/* Performance Insights */}
             <Card>
@@ -462,5 +703,8 @@ export default function Analytics() {
         </main>
       </div>
     </div>
+    </AnalyticsFilterContext.Provider>
   );
 }
+
+export default Analytics;
