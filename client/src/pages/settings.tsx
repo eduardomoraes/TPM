@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { settingsApi, type UserSettings as ApiUserSettings } from "@/lib/settingsApi";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -66,7 +68,15 @@ interface UserSettings {
 export default function Settings() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
+  // Fetch user settings
+  const { data: settingsData, isLoading: settingsLoading } = useQuery<ApiUserSettings>({
+    queryKey: ['/api/settings'],
+    queryFn: settingsApi.getSettings,
+    enabled: isAuthenticated,
+  });
+
   const [settings, setSettings] = useState<UserSettings>({
     notifications: {
       emailAlerts: true,
@@ -100,6 +110,50 @@ export default function Settings() {
     },
   });
 
+  // Update local state when settings data is loaded
+  useEffect(() => {
+    if (settingsData) {
+      setSettings(settingsData);
+    }
+  }, [settingsData]);
+
+  // Mutations for settings and profile
+  const updateSettingsMutation = useMutation({
+    mutationFn: settingsApi.updateSettings,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
+      toast({
+        title: "Settings Saved",
+        description: "Your preferences have been successfully saved.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to save settings: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateProfileMutation = useMutation({
+    mutationFn: settingsApi.updateProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update profile: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   const [profileData, setProfileData] = useState({
     firstName: "",
     lastName: "",
@@ -109,7 +163,8 @@ export default function Settings() {
     phone: "",
   });
 
-  const [isLoading2, setIsLoading2] = useState(false);
+  const isUpdatingSettings = updateSettingsMutation.isPending;
+  const isUpdatingProfile = updateProfileMutation.isPending;
   const [showApiKeys, setShowApiKeys] = useState(false);
 
   useEffect(() => {
@@ -140,44 +195,22 @@ export default function Settings() {
   }, [isAuthenticated, isLoading, user, toast]);
 
   const handleSaveProfile = async () => {
-    setIsLoading2(true);
     try {
-      // Simulate API call to save profile
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated.",
+      await updateProfileMutation.mutateAsync({
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+        phone: profileData.phone,
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading2(false);
+      // Error handling is done in the mutation
     }
   };
 
   const handleSaveSettings = async () => {
-    setIsLoading2(true);
     try {
-      // Simulate API call to save settings
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Settings Saved",
-        description: "Your preferences have been successfully saved.",
-      });
+      await updateSettingsMutation.mutateAsync(settings);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save settings. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading2(false);
+      // Error handling is done in the mutation
     }
   };
 
@@ -327,8 +360,8 @@ export default function Settings() {
                         </div>
 
                         <div className="pt-4">
-                          <Button onClick={handleSaveProfile} disabled={isLoading2}>
-                            {isLoading2 ? (
+                          <Button onClick={handleSaveProfile} disabled={isUpdatingProfile}>
+                            {isUpdatingProfile ? (
                               <>
                                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                                 Saving...
@@ -436,8 +469,8 @@ export default function Settings() {
                     <Separator />
 
                     <div className="pt-4">
-                      <Button onClick={handleSaveSettings} disabled={isLoading2}>
-                        {isLoading2 ? (
+                      <Button onClick={handleSaveSettings} disabled={isUpdatingSettings}>
+                        {isUpdatingSettings ? (
                           <>
                             <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                             Saving...
@@ -579,8 +612,8 @@ export default function Settings() {
                     <Separator />
 
                     <div className="pt-4">
-                      <Button onClick={handleSaveSettings} disabled={isLoading2}>
-                        {isLoading2 ? (
+                      <Button onClick={handleSaveSettings} disabled={isUpdatingSettings}>
+                        {isUpdatingSettings ? (
                           <>
                             <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                             Saving...
@@ -681,8 +714,8 @@ export default function Settings() {
                     <Separator />
 
                     <div className="pt-4">
-                      <Button onClick={handleSaveSettings} disabled={isLoading2}>
-                        {isLoading2 ? (
+                      <Button onClick={handleSaveSettings} disabled={isUpdatingSettings}>
+                        {isUpdatingSettings ? (
                           <>
                             <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                             Saving...
@@ -770,8 +803,8 @@ export default function Settings() {
                     <Separator />
 
                     <div className="pt-4">
-                      <Button onClick={handleSaveSettings} disabled={isLoading2}>
-                        {isLoading2 ? (
+                      <Button onClick={handleSaveSettings} disabled={isUpdatingSettings}>
+                        {isUpdatingSettings ? (
                           <>
                             <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                             Saving...

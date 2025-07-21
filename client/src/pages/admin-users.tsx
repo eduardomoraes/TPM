@@ -38,6 +38,7 @@ import {
   Save
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { adminApi, type AdminUser } from "@/lib/adminApi";
 
 interface UserProfile {
   id: string;
@@ -79,7 +80,7 @@ export default function AdminUsers() {
   const [selectedDepartment, setSelectedDepartment] = useState("all");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [isLoading2, setIsLoading2] = useState(false);
 
   const [newUser, setNewUser] = useState({
@@ -92,7 +93,7 @@ export default function AdminUsers() {
   });
 
   // Check if current user is Admin
-  const isAdmin = (user as any)?.email === "eduardodmoraes@gmail.com";
+  const isAdmin = (user as any)?.role === 'admin';
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -120,74 +121,82 @@ export default function AdminUsers() {
     }
   }, [isAuthenticated, isLoading, isAdmin, toast]);
 
-  // Mock data for demonstration - in real app this would come from API
-  const mockUsers: UserProfile[] = [
-    {
-      id: "14792220",
-      email: "eduardodmoraes@gmail.com",
-      firstName: "Eduardo",
-      lastName: "Moraes",
-      role: "Admin",
-      department: "IT",
-      phone: "+1 (555) 123-4567",
-      isActive: true,
-      lastLogin: "2025-01-21T20:00:00Z",
-      createdAt: "2024-01-01T00:00:00Z",
-      permissions: ["all"],
+  // Fetch users with React Query
+  const { 
+    data: adminUsers = [], 
+    isLoading: usersLoading, 
+    error: usersError 
+  } = useQuery<AdminUser[]>({
+    queryKey: ['/api/admin/users'],
+    queryFn: adminApi.getUsers,
+    enabled: isAuthenticated && isAdmin,
+  });
+
+  // Create mutations for user management
+  const createUserMutation = useMutation({
+    mutationFn: adminApi.createUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({
+        title: "Success",
+        description: "User created successfully",
+      });
+      setIsCreateDialogOpen(false);
+      setNewUser({
+        email: "",
+        firstName: "",
+        lastName: "",
+        role: "Sales Manager",
+        department: "",
+        phone: "",
+      });
     },
-    {
-      id: "2",
-      email: "sarah.johnson@company.com",
-      firstName: "Sarah",
-      lastName: "Johnson",
-      role: "Sales Manager",
-      department: "Sales",
-      phone: "+1 (555) 234-5678",
-      isActive: true,
-      lastLogin: "2025-01-21T18:30:00Z",
-      createdAt: "2024-02-15T00:00:00Z",
-      permissions: ["promotions", "calendar", "budget_view"],
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to create user: ${error.message}`,
+        variant: "destructive",
+      });
     },
-    {
-      id: "3",
-      email: "mike.chen@company.com",
-      firstName: "Mike",
-      lastName: "Chen",
-      role: "Finance Analyst",
-      department: "Finance",
-      phone: "+1 (555) 345-6789",
-      isActive: true,
-      lastLogin: "2025-01-21T17:45:00Z",
-      createdAt: "2024-03-10T00:00:00Z",
-      permissions: ["budget", "analytics", "deductions"],
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: ({ id, ...data }: any) => adminApi.updateUser(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({
+        title: "Success",
+        description: "User updated successfully",
+      });
+      setIsEditDialogOpen(false);
+      setSelectedUser(null);
     },
-    {
-      id: "4",
-      email: "jennifer.davis@company.com",
-      firstName: "Jennifer",
-      lastName: "Davis",
-      role: "Trade Development",
-      department: "Marketing",
-      phone: "+1 (555) 456-7890",
-      isActive: false,
-      lastLogin: "2025-01-15T14:20:00Z",
-      createdAt: "2024-04-20T00:00:00Z",
-      permissions: ["forecasting", "promotions", "analytics_view"],
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update user: ${error.message}`,
+        variant: "destructive",
+      });
     },
-    {
-      id: "5",
-      email: "robert.wilson@company.com",
-      firstName: "Robert",
-      lastName: "Wilson",
-      role: "Executive",
-      department: "Executive",
-      phone: "+1 (555) 567-8901",
-      isActive: true,
-      lastLogin: "2025-01-21T16:00:00Z",
-      createdAt: "2024-05-05T00:00:00Z",
-      permissions: ["dashboard", "analytics", "reports"],
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: adminApi.deleteUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      });
     },
-  ];
+    onError: (error) => {
+      toast({
+        title: "Error", 
+        description: `Failed to delete user: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
 
   const mockDepartments: Department[] = [
     { id: "1", name: "IT", description: "Information Technology", userCount: 1 },
@@ -235,10 +244,13 @@ export default function AdminUsers() {
     },
   ];
 
-  const filteredUsers = mockUsers.filter(user => {
-    const matchesSearch = user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredUsers = adminUsers.filter(user => {
+    const firstName = user.firstName || '';
+    const lastName = user.lastName || '';
+    const email = user.maskedEmail || '';
+    const matchesSearch = firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === "all" || user.role === selectedRole;
     const matchesDepartment = selectedDepartment === "all" || user.department === selectedDepartment;
     
@@ -246,77 +258,45 @@ export default function AdminUsers() {
   });
 
   const handleCreateUser = async () => {
-    setIsLoading2(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "User Created",
-        description: `User ${newUser.firstName} ${newUser.lastName} has been created successfully.`,
-      });
-      
-      setIsCreateDialogOpen(false);
-      setNewUser({
-        email: "",
-        firstName: "",
-        lastName: "",
-        role: "Sales Manager",
-        department: "",
-        phone: "",
+      await createUserMutation.mutateAsync({
+        id: newUser.email, // Use email as ID for now
+        email: newUser.email,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        role: newUser.role.toLowerCase().replace(' ', '_'),
+        department: newUser.department,
+        phone: newUser.phone,
+        isActive: true,
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create user. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading2(false);
+      // Error handling is done in the mutation
     }
   };
 
   const handleUpdateUser = async () => {
     if (!selectedUser) return;
     
-    setIsLoading2(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "User Updated",
-        description: `User ${selectedUser.firstName} ${selectedUser.lastName} has been updated successfully.`,
+      await updateUserMutation.mutateAsync({
+        id: selectedUser.id,
+        firstName: selectedUser.firstName,
+        lastName: selectedUser.lastName,
+        role: selectedUser.role,
+        department: selectedUser.department,
+        phone: selectedUser.phone,
+        isActive: selectedUser.isActive,
       });
-      
-      setIsEditDialogOpen(false);
-      setSelectedUser(null);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update user. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading2(false);
+      // Error handling is done in the mutation
     }
   };
 
   const handleDeleteUser = async (userId: string, userName: string) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      toast({
-        title: "User Deleted",
-        description: `User ${userName} has been deleted successfully.`,
-      });
+      await deleteUserMutation.mutateAsync(userId);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete user. Please try again.",
-        variant: "destructive",
-      });
+      // Error handling is done in the mutation
     }
   };
 
@@ -552,23 +532,22 @@ export default function AdminUsers() {
                             <TableCell>
                               <div className="flex items-center space-x-3">
                                 <Avatar className="h-8 w-8">
-                                  <AvatarImage src={user.profileImageUrl} />
                                   <AvatarFallback>
-                                    {user.firstName[0]}{user.lastName[0]}
+                                    {(user.firstName?.charAt(0) || 'U')}{(user.lastName?.charAt(0) || 'N')}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <div className="font-medium">{user.firstName} {user.lastName}</div>
-                                  <div className="text-sm text-gray-500">{user.email}</div>
+                                  <div className="font-medium">{user.firstName || 'N/A'} {user.lastName || ''}</div>
+                                  <div className="text-sm text-gray-500">{user.maskedEmail}</div>
                                 </div>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge className={getRoleBadgeColor(user.role)}>
-                                {user.role}
+                              <Badge className={getRoleBadgeColor(user.role || 'Unknown')}>
+                                {user.role || 'Unknown'}
                               </Badge>
                             </TableCell>
-                            <TableCell>{user.department}</TableCell>
+                            <TableCell>{user.department || 'N/A'}</TableCell>
                             <TableCell>
                               <Badge variant={user.isActive ? "default" : "secondary"}>
                                 {user.isActive ? "Active" : "Inactive"}
@@ -696,25 +675,25 @@ export default function AdminUsers() {
                       <div className="space-y-2">
                         <Label>First Name</Label>
                         <Input
-                          value={selectedUser.firstName}
+                          value={selectedUser.firstName || ''}
                           onChange={(e) => setSelectedUser(prev => prev ? { ...prev, firstName: e.target.value } : null)}
                         />
                       </div>
                       <div className="space-y-2">
                         <Label>Last Name</Label>
                         <Input
-                          value={selectedUser.lastName}
+                          value={selectedUser.lastName || ''}
                           onChange={(e) => setSelectedUser(prev => prev ? { ...prev, lastName: e.target.value } : null)}
                         />
                       </div>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label>Email</Label>
+                      <Label>Email (Masked for Security)</Label>
                       <Input
                         type="email"
-                        value={selectedUser.email}
-                        onChange={(e) => setSelectedUser(prev => prev ? { ...prev, email: e.target.value } : null)}
+                        value={selectedUser.maskedEmail}
+                        disabled
                       />
                     </div>
 
@@ -722,7 +701,7 @@ export default function AdminUsers() {
                       <div className="space-y-2">
                         <Label>Role</Label>
                         <Select 
-                          value={selectedUser.role} 
+                          value={selectedUser.role || 'sales_manager'} 
                           onValueChange={(value) => setSelectedUser(prev => prev ? { ...prev, role: value } : null)}
                         >
                           <SelectTrigger>
@@ -740,7 +719,7 @@ export default function AdminUsers() {
                       <div className="space-y-2">
                         <Label>Department</Label>
                         <Input
-                          value={selectedUser.department}
+                          value={selectedUser.department || ''}
                           onChange={(e) => setSelectedUser(prev => prev ? { ...prev, department: e.target.value } : null)}
                         />
                       </div>

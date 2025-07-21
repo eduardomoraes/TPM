@@ -10,7 +10,9 @@ import {
   insertDeductionSchema,
   insertSalesDataSchema,
   insertActivitySchema,
+  insertUserSettingsSchema,
 } from "@shared/schema";
+import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -311,6 +313,154 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating sales data:", error);
       res.status(400).json({ message: "Failed to create sales data" });
+    }
+  });
+
+  // Admin routes (protected for admin role only)
+  const isAdmin = async (req: any, res: any, next: any) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+      next();
+    } catch (error) {
+      console.error("Error checking admin role:", error);
+      return res.status(500).json({ message: "Failed to verify admin access" });
+    }
+  };
+
+  app.get('/api/admin/users', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.get('/api/admin/users/:id', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const user = await storage.getUserById(req.params.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  app.post('/api/admin/users', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const userData = req.body;
+      const user = await storage.createUser(userData);
+      res.status(201).json(user);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+
+  app.patch('/api/admin/users/:id', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const userData = req.body;
+      const user = await storage.updateUser(req.params.id, userData);
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  app.delete('/api/admin/users/:id', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      await storage.deleteUser(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
+  // User settings routes
+  app.get('/api/settings', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const settings = await storage.getUserSettings(userId);
+      
+      if (!settings) {
+        // Return default settings if none exist
+        const defaultSettings = {
+          notifications: {
+            emailAlerts: true,
+            pushNotifications: true,
+            weeklyReports: true,
+            budgetAlerts: true,
+            promotionReminders: true,
+          },
+          preferences: {
+            theme: "light",
+            language: "en",
+            timezone: "America/New_York",
+            currency: "USD",
+            dateFormat: "MM/DD/YYYY",
+            defaultDashboardView: "overview",
+            roiDisplayFormat: "percentage",
+          },
+          dashboard: {
+            defaultTimeRange: "last-12-months",
+            showKPICards: true,
+            showROIChart: true,
+            showPromotionCalendar: true,
+            showBudgetOverview: true,
+            showRecentActivities: true,
+          },
+          business: {
+            fiscalYearStart: "01-01",
+            defaultPromotionDuration: 30,
+            budgetApprovalThreshold: 10000,
+            roiTarget: 150,
+          },
+        };
+        return res.json(defaultSettings);
+      }
+      
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  app.put('/api/settings', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const settingsData = req.body;
+      
+      const settings = await storage.upsertUserSettings(userId, settingsData);
+      res.json(settings);
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      res.status(500).json({ message: "Failed to update settings" });
+    }
+  });
+
+  // Update user profile route  
+  app.patch('/api/auth/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profileData = req.body;
+      
+      const user = await storage.updateUser(userId, profileData);
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
     }
   });
 

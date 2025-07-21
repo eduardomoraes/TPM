@@ -1,5 +1,6 @@
 import {
   users,
+  userSettings,
   accounts,
   products,
   promotions,
@@ -9,6 +10,8 @@ import {
   activities,
   type User,
   type UpsertUser,
+  type UserSettings,
+  type InsertUserSettings,
   type Account,
   type InsertAccount,
   type Product,
@@ -27,10 +30,35 @@ import {
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sum, count, sql } from "drizzle-orm";
 
+// Safe user type for public API (masks sensitive data)
+export interface SafeUser {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  role: string | null;
+  department: string | null;
+  isActive: boolean | null;
+  lastLogin: Date | null;
+  createdAt: Date | null;
+  maskedEmail: string; // Only shows first 2 chars + masked middle + domain
+}
+
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  
+  // Admin user management operations
+  getAllUsers(): Promise<SafeUser[]>;
+  getUserById(id: string): Promise<User | undefined>;
+  createUser(user: Partial<UpsertUser>): Promise<User>;
+  updateUser(id: string, user: Partial<UpsertUser>): Promise<User>;
+  deleteUser(id: string): Promise<void>;
+  updateUserLastLogin(id: string): Promise<void>;
+  
+  // User settings operations
+  getUserSettings(userId: string): Promise<UserSettings | undefined>;
+  upsertUserSettings(userId: string, settings: Partial<InsertUserSettings>): Promise<UserSettings>;
 
   // Account operations
   getAccounts(): Promise<Account[]>;
@@ -79,6 +107,22 @@ export interface IStorage {
   getTopPerformingPromotions(): Promise<(Promotion & { account: Account | null; roi: number; salesLift: number })[]>;
 }
 
+// Utility function to mask emails for security
+function maskEmail(email: string | null): string {
+  if (!email) return 'N/A';
+  const [localPart, domain] = email.split('@');
+  if (!localPart || !domain) return 'N/A';
+  
+  if (localPart.length <= 2) {
+    return `${localPart}***@${domain}`;
+  }
+  
+  const firstTwo = localPart.substring(0, 2);
+  const lastOne = localPart.substring(localPart.length - 1);
+  const maskedPart = '*'.repeat(Math.max(localPart.length - 3, 1));
+  return `${firstTwo}${maskedPart}${lastOne}@${domain}`;
+}
+
 export class DatabaseStorage implements IStorage {
   // User operations (mandatory for Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
@@ -99,6 +143,79 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
+  }
+
+  // Admin user management operations
+  async getAllUsers(): Promise<SafeUser[]> {
+    const allUsers = await db.select().from(users).orderBy(users.createdAt);
+    return allUsers.map(user => ({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      department: user.department,
+      isActive: user.isActive,
+      lastLogin: user.lastLogin,
+      createdAt: user.createdAt,
+      maskedEmail: maskEmail(user.email),
+    }));
+  }
+
+  async getUserById(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async createUser(user: Partial<UpsertUser>): Promise<User> {
+    const [newUser] = await db.insert(users).values({
+      ...user,
+      isActive: user.isActive ?? true,
+    } as UpsertUser).returning();
+    return newUser;
+  }
+
+  async updateUser(id: string, userData: Partial<UpsertUser>): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ ...userData, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
+  }
+
+  async updateUserLastLogin(id: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ lastLogin: new Date() })
+      .where(eq(users.id, id));
+  }
+
+  // User settings operations
+  async getUserSettings(userId: string): Promise<UserSettings | undefined> {
+    const [settings] = await db
+      .select()
+      .from(userSettings)
+      .where(eq(userSettings.userId, userId));
+    return settings;
+  }
+
+  async upsertUserSettings(userId: string, settingsData: Partial<InsertUserSettings>): Promise<UserSettings> {
+    const [settings] = await db
+      .insert(userSettings)
+      .values({ ...settingsData, userId } as InsertUserSettings)
+      .onConflictDoUpdate({
+        target: userSettings.userId,
+        set: {
+          ...settingsData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return settings;
   }
 
   // Account operations

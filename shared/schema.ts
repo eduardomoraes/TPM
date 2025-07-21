@@ -34,6 +34,48 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").default("sales_manager"),
+  department: varchar("department"),
+  phone: varchar("phone"),
+  isActive: boolean("is_active").default(true),
+  lastLogin: timestamp("last_login"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// User settings table for storing preferences
+export const userSettings = pgTable("user_settings", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  notifications: jsonb("notifications").default({
+    emailAlerts: true,
+    pushNotifications: true,
+    weeklyReports: true,
+    budgetAlerts: true,
+    promotionReminders: true,
+  }),
+  preferences: jsonb("preferences").default({
+    theme: "light",
+    language: "en",
+    timezone: "America/New_York",
+    currency: "USD",
+    dateFormat: "MM/DD/YYYY",
+    defaultDashboardView: "overview",
+    roiDisplayFormat: "percentage",
+  }),
+  dashboard: jsonb("dashboard").default({
+    defaultTimeRange: "last-12-months",
+    showKPICards: true,
+    showROIChart: true,
+    showPromotionCalendar: true,
+    showBudgetOverview: true,
+    showRecentActivities: true,
+  }),
+  business: jsonb("business").default({
+    fiscalYearStart: "01-01",
+    defaultPromotionDuration: 30,
+    budgetApprovalThreshold: 10000,
+    roiTarget: 150,
+  }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -233,9 +275,27 @@ export const insertActivitySchema = createInsertSchema(activities).omit({
   createdAt: true,
 });
 
+export const insertUserSettingsSchema = createInsertSchema(userSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+
+// User Settings types
+export type UserSettings = typeof userSettings.$inferSelect;
+export type InsertUserSettings = typeof userSettings.$inferInsert;
+
+// Relations for user settings
+export const userSettingsRelations = relations(userSettings, ({ one }) => ({
+  user: one(users, {
+    fields: [userSettings.userId],
+    references: [users.id],
+  }),
+}));
 export type Account = typeof accounts.$inferSelect;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type Product = typeof products.$inferSelect;
