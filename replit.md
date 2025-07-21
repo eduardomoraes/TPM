@@ -59,8 +59,14 @@ The system uses a comprehensive PostgreSQL schema with the following core entiti
 ### Authentication Flow
 1. OpenID Connect integration with Replit Auth
 2. Session-based authentication with PostgreSQL storage
-3. Role-based access control (Sales Manager, Finance, etc.)
+3. Role-based access control with 5 roles:
+   - **Admin**: Full access to all features (IT department)
+   - **Sales Manager**: Promotion planning and execution
+   - **Finance Analyst**: Budget and ROI analysis
+   - **Trade Development**: Promotion strategy and forecasting
+   - **Executive**: High-level analytics and reporting
 4. Automatic session management and renewal
+5. Admin role assigned to eduardodmoraes@gmail.com with IT department
 
 ### Data Processing
 - Real-time KPI calculations and aggregations

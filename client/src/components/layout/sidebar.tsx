@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { TrendingUp, Calendar, DollarSign, BarChart3, Receipt, Settings, Target, BookOpen } from "lucide-react";
@@ -9,6 +9,13 @@ export default function Sidebar() {
   const [location] = useLocation();
   const { user } = useAuth();
   const [currentRole, setCurrentRole] = useState("Sales Manager");
+
+  // Update role when user data loads
+  useEffect(() => {
+    if (user && (user as any)?.email === "eduardodmoraes@gmail.com") {
+      setCurrentRole("Admin");
+    }
+  }, [user]);
 
   const navigation = [
     { name: "Dashboard", href: "/", icon: TrendingUp, current: location === "/" },
@@ -76,6 +83,7 @@ export default function Sidebar() {
               <SelectItem value="Finance Analyst">Finance Analyst</SelectItem>
               <SelectItem value="Trade Development">Trade Development</SelectItem>
               <SelectItem value="Executive">Executive</SelectItem>
+              <SelectItem value="Admin">Admin (Full Access)</SelectItem>
             </SelectContent>
           </Select>
         </div>

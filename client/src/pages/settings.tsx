@@ -126,12 +126,14 @@ export default function Settings() {
     }
 
     if (user) {
+      // Check if this is the admin user and set appropriate role/department
+      const isAdminUser = (user as any).email === "eduardodmoraes@gmail.com";
       setProfileData({
         firstName: (user as any).firstName || "",
         lastName: (user as any).lastName || "",
         email: (user as any).email || "",
-        role: "Sales Manager",
-        department: "",
+        role: isAdminUser ? "Admin" : "Sales Manager",
+        department: isAdminUser ? "IT" : "",
         phone: "",
       });
     }
@@ -294,8 +296,14 @@ export default function Settings() {
                                 <SelectItem value="Finance Analyst">Finance Analyst</SelectItem>
                                 <SelectItem value="Trade Development">Trade Development</SelectItem>
                                 <SelectItem value="Executive">Executive</SelectItem>
+                                <SelectItem value="Admin">Admin (Full Access)</SelectItem>
                               </SelectContent>
                             </Select>
+                            {profileData.role === "Admin" && (
+                              <p className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                                Admin role has full access to all features and settings in the TPM platform.
+                              </p>
+                            )}
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="department">Department</Label>
