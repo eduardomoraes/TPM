@@ -159,9 +159,9 @@ function Analytics() {
   }
 
   // Apply filters to data
-  const filteredSalesData = useMemo(() => applyFilters(salesData || []), [salesData, applyFilters]);
-  const filteredPromotions = useMemo(() => applyFilters(allPromotions || []), [allPromotions, applyFilters]);
-  const filteredTopPromotions = useMemo(() => applyFilters(topPromotions || []), [topPromotions, applyFilters]);
+  const filteredSalesData = useMemo(() => applyFilters(Array.isArray(salesData) ? salesData : []), [salesData, applyFilters]);
+  const filteredPromotions = useMemo(() => applyFilters(Array.isArray(allPromotions) ? allPromotions : []), [allPromotions, applyFilters]);
+  const filteredTopPromotions = useMemo(() => applyFilters(Array.isArray(topPromotions) ? topPromotions : []), [topPromotions, applyFilters]);
 
   // Calculate additional analytics metrics based on filtered data
   const totalIncrementalSales = filteredSalesData.reduce((sum: number, sale: any) => 
@@ -612,7 +612,7 @@ function Analytics() {
               <CardTitle>Top Performing Promotions - Detailed Analysis</CardTitle>
             </CardHeader>
             <CardContent>
-              {!topPromotions || topPromotions.length === 0 ? (
+              {!topPromotions || !Array.isArray(topPromotions) || topPromotions.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">No promotion performance data available</p>
               ) : (
                 <div className="overflow-x-auto">
@@ -629,7 +629,7 @@ function Analytics() {
                       </tr>
                     </thead>
                     <tbody>
-                      {topPromotions.map((promotion: any) => {
+                      {Array.isArray(topPromotions) ? topPromotions.map((promotion: any) => {
                         const roi = promotion.roi || 0;
                         const salesLift = promotion.salesLift || 0;
                         
@@ -658,7 +658,7 @@ function Analytics() {
                             </td>
                           </tr>
                         );
-                      })}
+                      }) : null}
                     </tbody>
                   </table>
                 </div>
