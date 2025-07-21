@@ -74,7 +74,7 @@ export interface IStorage {
     activePromotions: number;
     pendingDeductions: number;
   }>;
-  getROITrendData(): Promise<{ month: string; roi: number }[]>;
+  getROITrendData(timePeriod?: string): Promise<{ month: string; roi: number }[]>;
   getTopPerformingPromotions(): Promise<(Promotion & { account: Account | null; roi: number; salesLift: number })[]>;
 }
 
@@ -345,14 +345,35 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getROITrendData(): Promise<{ month: string; roi: number }[]> {
+  async getROITrendData(timePeriod: string = 'last-12-months'): Promise<{ month: string; roi: number }[]> {
+    let dateFilter;
+    const now = new Date();
+    
+    switch (timePeriod) {
+      case 'last-6-months':
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(now.getMonth() - 6);
+        dateFilter = sql`${salesData.salesDate} >= ${sixMonthsAgo.toISOString().split('T')[0]}`;
+        break;
+      case 'ytd':
+        const yearStart = new Date(now.getFullYear(), 0, 1);
+        dateFilter = sql`${salesData.salesDate} >= ${yearStart.toISOString().split('T')[0]}`;
+        break;
+      case 'last-12-months':
+      default:
+        const twelveMonthsAgo = new Date();
+        twelveMonthsAgo.setMonth(now.getMonth() - 12);
+        dateFilter = sql`${salesData.salesDate} >= ${twelveMonthsAgo.toISOString().split('T')[0]}`;
+        break;
+    }
+
     const result = await db
       .select({
         month: sql<string>`TO_CHAR(${salesData.salesDate}, 'Mon')`,
         roi: sql<number>`AVG(${salesData.roi})`,
       })
       .from(salesData)
-      .where(sql`${salesData.roi} IS NOT NULL`)
+      .where(sql`${salesData.roi} IS NOT NULL AND ${dateFilter}`)
       .groupBy(sql`EXTRACT(MONTH FROM ${salesData.salesDate}), TO_CHAR(${salesData.salesDate}, 'Mon')`)
       .orderBy(sql`EXTRACT(MONTH FROM ${salesData.salesDate})`);
 

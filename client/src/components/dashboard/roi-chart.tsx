@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,9 +29,10 @@ ChartJS.register(
 
 export default function ROIChart() {
   const { isAuthenticated } = useAuth();
+  const [timePeriod, setTimePeriod] = useState("last-12-months");
 
   const { data: roiTrend, isLoading } = useQuery({
-    queryKey: ["/api/dashboard/roi-trend"],
+    queryKey: ["/api/dashboard/roi-trend", timePeriod],
     enabled: isAuthenticated,
   });
 
@@ -103,7 +105,7 @@ export default function ROIChart() {
           <CardTitle className="text-lg font-semibold text-gray-900">
             ROI Trend Analysis
           </CardTitle>
-          <Select defaultValue="last-12-months">
+          <Select value={timePeriod} onValueChange={setTimePeriod}>
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
