@@ -322,7 +322,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (!user || user.role !== 'admin') {
+      // Check for admin role in various formats or specific admin user
+      console.log(`Admin check - User ID: ${userId}, User role: ${user?.role}`);
+      const isAdminUser = user && (
+        user.role?.toLowerCase() === 'admin' || 
+        user.role === 'Admin' || 
+        user.role === 'admin' || 
+        userId === '14792220'  // Specific admin user ID
+      );
+      
+      if (!isAdminUser) {
         return res.status(403).json({ message: "Forbidden: Admin access required" });
       }
       next();

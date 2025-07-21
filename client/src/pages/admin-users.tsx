@@ -264,7 +264,7 @@ export default function AdminUsers() {
         email: newUser.email,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
-        role: newUser.role.toLowerCase().replace(' ', '_'),
+        role: newUser.role, // Keep the role as is (title case)
         department: newUser.department,
         phone: newUser.phone,
         isActive: true,
@@ -701,7 +701,7 @@ export default function AdminUsers() {
                       <div className="space-y-2">
                         <Label>Role</Label>
                         <Select 
-                          value={selectedUser.role || 'sales_manager'} 
+                          value={selectedUser.role || 'Sales Manager'} 
                           onValueChange={(value) => setSelectedUser(prev => prev ? { ...prev, role: value } : null)}
                         >
                           <SelectTrigger>
@@ -738,8 +738,8 @@ export default function AdminUsers() {
                   <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={handleUpdateUser} disabled={isLoading2}>
-                    {isLoading2 ? (
+                  <Button onClick={handleUpdateUser} disabled={updateUserMutation.isPending}>
+                    {updateUserMutation.isPending ? (
                       <>
                         <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                         Saving...
