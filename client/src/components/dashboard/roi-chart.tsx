@@ -35,15 +35,15 @@ export default function ROIChart() {
   });
 
   const chartData = {
-    labels: roiTrend?.map((item: any) => item.month) || [
+    labels: Array.isArray(roiTrend) ? roiTrend.map((item: any) => item.month) : [
       "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
       "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     ],
     datasets: [
       {
         label: "ROI %",
-        data: roiTrend?.map((item: any) => item.roi) || [
-          180, 195, 220, 210, 240, 235, 260, 250, 270, 280, 275, 290
+        data: Array.isArray(roiTrend) ? roiTrend.map((item: any) => parseFloat(item.roi)) : [
+          1.8, 2.1, 3.2, 2.8, 4.2, 3.7, 5.1, 4.8, 6.2, 5.9, 6.8, 7.2
         ],
         borderColor: "hsl(207, 90%, 54%)",
         backgroundColor: "hsla(207, 90%, 54%, 0.1)",
@@ -74,8 +74,7 @@ export default function ROIChart() {
     },
     scales: {
       y: {
-        beginAtZero: false,
-        min: 150,
+        beginAtZero: true,
         grid: {
           color: "rgba(0, 0, 0, 0.1)",
         },
