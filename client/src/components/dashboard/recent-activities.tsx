@@ -5,21 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertTriangle, Plus, TrendingUp } from "lucide-react";
 import { DashboardFilterContext } from "@/pages/dashboard";
+import type { Activity, User } from "@shared/schema";
 
-export default function RecentActivities() {
+type ActivityWithUser = Activity & { user: User | null };
+
+function RecentActivities() {
   const { isAuthenticated } = useAuth();
   const { searchQuery, dateRange, accountFilter, statusFilter } = useContext(DashboardFilterContext);
 
-  const { data: activities, isLoading } = useQuery({
+  const { data: activities, isLoading } = useQuery<ActivityWithUser[]>({
     queryKey: ["/api/dashboard/recent-activities"],
     enabled: isAuthenticated,
   });
 
   // Filter activities based on search and filters
   const filteredActivities = useMemo(() => {
-    if (!activities) return [];
+    if (!activities || !Array.isArray(activities)) return [];
     
-    return activities.filter((activity: any) => {
+    return activities.filter((activity: ActivityWithUser) => {
       // Search filter
       if (searchQuery && !activity.message.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
@@ -27,7 +30,7 @@ export default function RecentActivities() {
       
       // Date range filter
       if (dateRange !== 'all') {
-        const activityDate = new Date(activity.createdAt);
+        const activityDate = new Date(activity.createdAt || '');
         const now = new Date();
         
         switch (dateRange) {
@@ -135,7 +138,7 @@ export default function RecentActivities() {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredActivities.map((activity: any) => (
+            {filteredActivities.map((activity: ActivityWithUser) => (
               <div
                 key={activity.id}
                 className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
@@ -146,7 +149,7 @@ export default function RecentActivities() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-gray-900">{activity.message}</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {formatTimeAgo(activity.createdAt)}
+                    {formatTimeAgo(activity.createdAt?.toString() || '')}
                   </p>
                 </div>
               </div>
@@ -157,3 +160,5 @@ export default function RecentActivities() {
     </Card>
   );
 }
+
+export default RecentActivities;

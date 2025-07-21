@@ -5,21 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DashboardFilterContext } from "@/pages/dashboard";
+import type { Promotion, Account } from "@shared/schema";
 
-export default function PromotionCalendarWidget() {
+type PromotionWithAccount = Promotion & { account: Account | null };
+
+function PromotionCalendarWidget() {
   const { isAuthenticated } = useAuth();
   const { searchQuery, accountFilter, statusFilter } = useContext(DashboardFilterContext);
 
-  const { data: upcomingPromotions, isLoading } = useQuery({
+  const { data: upcomingPromotions, isLoading } = useQuery<PromotionWithAccount[]>({
     queryKey: ["/api/promotions/upcoming"],
     enabled: isAuthenticated,
   });
 
   // Filter promotions based on search and filters
   const filteredPromotions = useMemo(() => {
-    if (!upcomingPromotions) return [];
+    if (!upcomingPromotions || !Array.isArray(upcomingPromotions)) return [];
     
-    return upcomingPromotions.filter((promo: any) => {
+    return upcomingPromotions.filter((promo: PromotionWithAccount) => {
       // Search filter
       if (searchQuery && !promo.name.toLowerCase().includes(searchQuery.toLowerCase()) 
           && !promo.account?.name.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -62,7 +65,7 @@ export default function PromotionCalendarWidget() {
   const getPromotionsForDay = (date: Date) => {
     if (!filteredPromotions) return [];
     
-    return filteredPromotions.filter((promo: any) => {
+    return filteredPromotions.filter((promo: PromotionWithAccount) => {
       const startDate = new Date(promo.startDate);
       const endDate = new Date(promo.endDate);
       return date >= startDate && date <= endDate;
@@ -140,7 +143,7 @@ export default function PromotionCalendarWidget() {
                 
                 {dayPromotions.length > 0 && (
                   <div className="mt-1 space-y-1">
-                    {dayPromotions.slice(0, 2).map((promo: any, promoIndex: number) => (
+                    {dayPromotions.slice(0, 2).map((promo: PromotionWithAccount, promoIndex: number) => (
                       <div
                         key={promoIndex}
                         className={`text-xs px-1 rounded truncate ${getPromotionColor(promo.promotionType)}`}
@@ -170,3 +173,5 @@ export default function PromotionCalendarWidget() {
     </Card>
   );
 }
+
+export default PromotionCalendarWidget;
