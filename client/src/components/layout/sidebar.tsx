@@ -85,14 +85,14 @@ export default function Sidebar() {
       <div className="p-4 border-t border-gray-200">
         <div className="flex items-center">
           <Avatar className="w-8 h-8">
-            <AvatarImage src={user?.profileImageUrl || ""} alt="User avatar" />
+            <AvatarImage src={(user as any)?.profileImageUrl || ""} alt="User avatar" />
             <AvatarFallback>
-              {user?.firstName?.[0]}{user?.lastName?.[0]}
+              {(user as any)?.firstName?.[0]}{(user as any)?.lastName?.[0]}
             </AvatarFallback>
           </Avatar>
           <div className="ml-3 flex-1">
             <p className="text-sm font-medium text-gray-900">
-              {user?.firstName} {user?.lastName}
+              {(user as any)?.firstName} {(user as any)?.lastName}
             </p>
             <p className="text-xs text-gray-500">{currentRole}</p>
           </div>
