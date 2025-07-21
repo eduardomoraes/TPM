@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const budgetAllocationFormSchema = insertBudgetAllocationSchema;
 type BudgetAllocationFormData = z.infer<typeof budgetAllocationFormSchema>;
@@ -24,9 +25,16 @@ interface BudgetAllocationDialogProps {
 export default function BudgetAllocationDialog({ isOpen, onClose }: BudgetAllocationDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [existingBudget, setExistingBudget] = useState<any>(null);
+  const [pendingData, setPendingData] = useState<BudgetAllocationFormData | null>(null);
 
   const { data: accounts } = useQuery({
     queryKey: ["/api/accounts"],
+  });
+
+  const { data: budgets } = useQuery({
+    queryKey: ["/api/budgets"],
   });
 
   const form = useForm<BudgetAllocationFormData>({
@@ -39,7 +47,7 @@ export default function BudgetAllocationDialog({ isOpen, onClose }: BudgetAlloca
   });
 
   const createBudgetAllocationMutation = useMutation({
-    mutationFn: async (data: BudgetAllocationFormData) => {
+    mutationFn: async (data: BudgetAllocationFormData & { action?: 'replace' | 'add' }) => {
       return await apiRequest("POST", "/api/budgets", data);
     },
     onSuccess: () => {
@@ -48,9 +56,12 @@ export default function BudgetAllocationDialog({ isOpen, onClose }: BudgetAlloca
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/kpis"] });
       toast({
         title: "Success",
-        description: "Budget allocation created successfully",
+        description: "Budget allocation updated successfully",
       });
       form.reset();
+      setShowDuplicateDialog(false);
+      setExistingBudget(null);
+      setPendingData(null);
       onClose();
     },
     onError: (error) => {
@@ -75,7 +86,27 @@ export default function BudgetAllocationDialog({ isOpen, onClose }: BudgetAlloca
   });
 
   const handleSubmit = (data: BudgetAllocationFormData) => {
-    createBudgetAllocationMutation.mutate(data);
+    // Check for existing budget allocation with same account and quarter
+    const existing = Array.isArray(budgets) && budgets.find((budget: any) => 
+      budget.accountId === data.accountId && budget.quarter === data.quarter
+    );
+
+    if (existing) {
+      setExistingBudget(existing);
+      setPendingData(data);
+      setShowDuplicateDialog(true);
+    } else {
+      createBudgetAllocationMutation.mutate(data);
+    }
+  };
+
+  const handleDuplicateAction = (action: 'replace' | 'add') => {
+    if (pendingData) {
+      createBudgetAllocationMutation.mutate({
+        ...pendingData,
+        action
+      });
+    }
   };
 
   const currentYear = new Date().getFullYear();
@@ -183,6 +214,40 @@ export default function BudgetAllocationDialog({ isOpen, onClose }: BudgetAlloca
           </form>
         </Form>
       </DialogContent>
+      
+      <AlertDialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Budget Already Exists</AlertDialogTitle>
+            <AlertDialogDescription>
+              A budget allocation for{" "}
+              <strong>
+                {existingBudget?.account?.name || (Array.isArray(accounts) && accounts.find((a: any) => a.id === existingBudget?.accountId)?.name)}
+              </strong>{" "}
+              in <strong>{existingBudget?.quarter}</strong> already exists with{" "}
+              <strong>${Number(existingBudget?.allocatedAmount || 0).toLocaleString()}</strong>.
+              <br /><br />
+              Would you like to:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => handleDuplicateAction('add')}
+              disabled={createBudgetAllocationMutation.isPending}
+              className="border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            >
+              Add to Existing ({Number(existingBudget?.allocatedAmount || 0) + Number(pendingData?.allocatedAmount || 0)})
+            </AlertDialogAction>
+            <AlertDialogAction 
+              onClick={() => handleDuplicateAction('replace')}
+              disabled={createBudgetAllocationMutation.isPending}
+            >
+              Replace Current
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

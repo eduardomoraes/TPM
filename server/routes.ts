@@ -220,9 +220,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/budgets', isAuthenticated, async (req, res) => {
     try {
-      const validatedData = insertBudgetAllocationSchema.parse(req.body);
-      const budget = await storage.createBudgetAllocation(validatedData);
-      res.json(budget);
+      const { action, ...data } = req.body;
+      const validatedData = insertBudgetAllocationSchema.parse(data);
+      
+      if (action === 'replace' || action === 'add') {
+        const budget = await storage.upsertBudgetAllocation(validatedData, action);
+        res.json(budget);
+      } else {
+        const budget = await storage.createBudgetAllocation(validatedData);
+        res.json(budget);
+      }
     } catch (error) {
       console.error("Error creating budget:", error);
       res.status(400).json({ message: "Failed to create budget allocation" });

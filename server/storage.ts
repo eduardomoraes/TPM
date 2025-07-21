@@ -51,6 +51,7 @@ export interface IStorage {
   // Budget operations
   getBudgetAllocations(): Promise<(BudgetAllocation & { account: Account | null })[]>;
   createBudgetAllocation(allocation: InsertBudgetAllocation): Promise<BudgetAllocation>;
+  upsertBudgetAllocation(allocation: InsertBudgetAllocation, action: 'replace' | 'add'): Promise<BudgetAllocation>;
   getBudgetByQuarter(quarter: string): Promise<{ total: number; spent: number }>;
 
   // Deduction operations
@@ -203,6 +204,46 @@ export class DatabaseStorage implements IStorage {
   async createBudgetAllocation(allocation: InsertBudgetAllocation): Promise<BudgetAllocation> {
     const [newAllocation] = await db.insert(budgetAllocations).values(allocation).returning();
     return newAllocation;
+  }
+
+  async upsertBudgetAllocation(allocation: InsertBudgetAllocation, action: 'replace' | 'add'): Promise<BudgetAllocation> {
+    // Find existing budget allocation
+    const [existingBudget] = await db
+      .select()
+      .from(budgetAllocations)
+      .where(
+        and(
+          eq(budgetAllocations.accountId, allocation.accountId!),
+          eq(budgetAllocations.quarter, allocation.quarter)
+        )
+      );
+
+    if (existingBudget) {
+      let newAmount: string;
+      
+      if (action === 'add') {
+        // Add to existing amount
+        const currentAmount = Number(existingBudget.allocatedAmount);
+        const addAmount = Number(allocation.allocatedAmount);
+        newAmount = (currentAmount + addAmount).toString();
+      } else {
+        // Replace existing amount
+        newAmount = allocation.allocatedAmount;
+      }
+
+      const [updatedAllocation] = await db
+        .update(budgetAllocations)
+        .set({
+          allocatedAmount: newAmount,
+        })
+        .where(eq(budgetAllocations.id, existingBudget.id))
+        .returning();
+      
+      return updatedAllocation;
+    } else {
+      // Create new allocation if none exists
+      return this.createBudgetAllocation(allocation);
+    }
   }
 
   async getBudgetByQuarter(quarter: string): Promise<{ total: number; spent: number }> {
