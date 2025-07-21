@@ -146,7 +146,7 @@ export default function PromotionForm({ onSuccess }: PromotionFormProps) {
               <FormItem>
                 <FormLabel>Account</FormLabel>
                 <FormControl>
-                  <Select value={field.value?.toString()} onValueChange={field.onChange}>
+                  <Select value={field.value?.toString()} onValueChange={(value) => field.onChange(parseInt(value))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select account" />
                     </SelectTrigger>
@@ -171,7 +171,7 @@ export default function PromotionForm({ onSuccess }: PromotionFormProps) {
               <FormItem>
                 <FormLabel>Product</FormLabel>
                 <FormControl>
-                  <Select value={field.value?.toString()} onValueChange={field.onChange}>
+                  <Select value={field.value?.toString()} onValueChange={(value) => field.onChange(parseInt(value))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select product" />
                     </SelectTrigger>
