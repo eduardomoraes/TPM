@@ -30,9 +30,10 @@ ChartJS.register(
 export default function ROIChart() {
   const { isAuthenticated } = useAuth();
   const [timePeriod, setTimePeriod] = useState("last-12-months");
+  const [viewBy, setViewBy] = useState("months");
 
   const { data: roiTrend, isLoading } = useQuery({
-    queryKey: ["/api/dashboard/roi-trend", timePeriod],
+    queryKey: ["/api/dashboard/roi-trend", timePeriod, viewBy],
     enabled: isAuthenticated,
   });
 
@@ -105,16 +106,29 @@ export default function ROIChart() {
           <CardTitle className="text-lg font-semibold text-gray-900">
             ROI Trend Analysis
           </CardTitle>
-          <Select value={timePeriod} onValueChange={setTimePeriod}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="last-12-months">Last 12 months</SelectItem>
-              <SelectItem value="last-6-months">Last 6 months</SelectItem>
-              <SelectItem value="ytd">YTD</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2">
+            <Select value={viewBy} onValueChange={setViewBy}>
+              <SelectTrigger className="w-28">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="months">Months</SelectItem>
+                <SelectItem value="weeks">Weeks</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={timePeriod} onValueChange={setTimePeriod}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="last-month">Last Month</SelectItem>
+                <SelectItem value="last-3-months">Last 3 months</SelectItem>
+                <SelectItem value="last-6-months">Last 6 months</SelectItem>
+                <SelectItem value="last-12-months">Last 12 months</SelectItem>
+                <SelectItem value="ytd">YTD</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </CardHeader>
       <CardContent>

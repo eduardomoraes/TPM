@@ -74,7 +74,7 @@ export interface IStorage {
     activePromotions: number;
     pendingDeductions: number;
   }>;
-  getROITrendData(timePeriod?: string): Promise<{ month: string; roi: number }[]>;
+  getROITrendData(timePeriod?: string, viewBy?: string): Promise<{ month: string; roi: number }[]>;
   getTopPerformingPromotions(): Promise<(Promotion & { account: Account | null; roi: number; salesLift: number })[]>;
 }
 
@@ -345,11 +345,21 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getROITrendData(timePeriod: string = 'last-12-months'): Promise<{ month: string; roi: number }[]> {
+  async getROITrendData(timePeriod: string = 'last-12-months', viewBy: string = 'months'): Promise<{ month: string; roi: number }[]> {
     let dateFilter;
     const now = new Date();
     
     switch (timePeriod) {
+      case 'last-month':
+        const lastMonthStart = new Date();
+        lastMonthStart.setMonth(now.getMonth() - 1);
+        dateFilter = sql`${salesData.salesDate} >= ${lastMonthStart.toISOString().split('T')[0]}`;
+        break;
+      case 'last-3-months':
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(now.getMonth() - 3);
+        dateFilter = sql`${salesData.salesDate} >= ${threeMonthsAgo.toISOString().split('T')[0]}`;
+        break;
       case 'last-6-months':
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(now.getMonth() - 6);
@@ -367,15 +377,32 @@ export class DatabaseStorage implements IStorage {
         break;
     }
 
-    const result = await db
-      .select({
+    let groupByClause, selectClause, orderByClause;
+    
+    if (viewBy === 'weeks') {
+      // Group by week
+      selectClause = {
+        month: sql<string>`'Week ' || EXTRACT(WEEK FROM ${salesData.salesDate})::text`,
+        roi: sql<number>`AVG(${salesData.roi})`,
+      };
+      groupByClause = sql`EXTRACT(WEEK FROM ${salesData.salesDate}), EXTRACT(YEAR FROM ${salesData.salesDate})`;
+      orderByClause = sql`EXTRACT(YEAR FROM ${salesData.salesDate}), EXTRACT(WEEK FROM ${salesData.salesDate})`;
+    } else {
+      // Group by month (default)
+      selectClause = {
         month: sql<string>`TO_CHAR(${salesData.salesDate}, 'Mon')`,
         roi: sql<number>`AVG(${salesData.roi})`,
-      })
+      };
+      groupByClause = sql`EXTRACT(MONTH FROM ${salesData.salesDate}), EXTRACT(YEAR FROM ${salesData.salesDate}), TO_CHAR(${salesData.salesDate}, 'Mon')`;
+      orderByClause = sql`EXTRACT(YEAR FROM ${salesData.salesDate}), EXTRACT(MONTH FROM ${salesData.salesDate})`;
+    }
+
+    const result = await db
+      .select(selectClause)
       .from(salesData)
       .where(sql`${salesData.roi} IS NOT NULL AND ${dateFilter}`)
-      .groupBy(sql`EXTRACT(MONTH FROM ${salesData.salesDate}), TO_CHAR(${salesData.salesDate}, 'Mon')`)
-      .orderBy(sql`EXTRACT(MONTH FROM ${salesData.salesDate})`);
+      .groupBy(groupByClause)
+      .orderBy(orderByClause);
 
     return result.map(row => ({
       month: row.month,

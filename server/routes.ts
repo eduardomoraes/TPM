@@ -39,10 +39,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/dashboard/roi-trend/:timePeriod?', isAuthenticated, async (req, res) => {
+  app.get('/api/dashboard/roi-trend/:timePeriod?/:viewBy?', isAuthenticated, async (req, res) => {
     try {
       const timePeriod = req.params.timePeriod || 'last-12-months';
-      const trendData = await storage.getROITrendData(timePeriod);
+      const viewBy = req.params.viewBy || 'months';
+      const trendData = await storage.getROITrendData(timePeriod, viewBy);
       res.json(trendData);
     } catch (error) {
       console.error("Error fetching ROI trend:", error);
