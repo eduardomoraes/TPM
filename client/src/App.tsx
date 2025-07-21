@@ -13,6 +13,7 @@ import Deductions from "@/pages/deductions";
 import Analytics from "@/pages/analytics";
 import UserGuide from "@/pages/user-guide";
 import Settings from "@/pages/settings";
+import AdminUsers from "@/pages/admin-users";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -32,6 +33,7 @@ function Router() {
           <Route path="/analytics" component={Analytics} />
           <Route path="/guide" component={UserGuide} />
           <Route path="/settings" component={Settings} />
+          <Route path="/admin/users" component={AdminUsers} />
         </>
       )}
       <Route component={NotFound} />

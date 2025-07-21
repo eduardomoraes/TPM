@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import { TrendingUp, Calendar, DollarSign, BarChart3, Receipt, Settings, Target, BookOpen } from "lucide-react";
+import { TrendingUp, Calendar, DollarSign, BarChart3, Receipt, Settings, Target, BookOpen, Users } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -17,6 +17,9 @@ export default function Sidebar() {
     }
   }, [user]);
 
+  // Check if current user is Admin
+  const isAdmin = (user as any)?.email === "eduardodmoraes@gmail.com";
+
   const navigation = [
     { name: "Dashboard", href: "/", icon: TrendingUp, current: location === "/" },
     { name: "Promotion Calendar", href: "/promotions", icon: Calendar, current: location === "/promotions" },
@@ -26,6 +29,7 @@ export default function Sidebar() {
     { name: "Analytics & ROI", href: "/analytics", icon: Target, current: location === "/analytics" },
     { name: "User Guide", href: "/guide", icon: BookOpen, current: location === "/guide" },
     { name: "Settings", href: "/settings", icon: Settings, current: location === "/settings" },
+    ...(isAdmin ? [{ name: "Admin Users", href: "/admin/users", icon: Users, current: location === "/admin/users" }] : []),
   ];
 
   const handleLogout = () => {

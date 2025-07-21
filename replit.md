@@ -117,6 +117,19 @@ The system uses a comprehensive PostgreSQL schema with the following core entiti
 - Budget management and allocation tracking
 - Deduction management with automated processing
 - User authentication and role-based access
+- Comprehensive Settings page with 5 main sections:
+  - Profile Management with user information editing
+  - Notification preferences for email and app alerts
+  - Display & regional preferences (theme, language, timezone, currency)
+  - Dashboard configuration with widget visibility controls
+  - Business settings for fiscal year, ROI targets, and approval thresholds
+- **Admin User Management System** (Admin-only access):
+  - Complete user management with CRUD operations
+  - Role assignment and permission management
+  - Department organization and user grouping
+  - User status management (active/inactive)
+  - Advanced filtering and search capabilities
+  - Export/import functionality for user data
 - Responsive design with mobile support
 - Real-time data updates and notifications
 
