@@ -1,16 +1,59 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useContext, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertTriangle, Plus, TrendingUp } from "lucide-react";
+import { DashboardFilterContext } from "@/pages/dashboard";
 
 export default function RecentActivities() {
   const { isAuthenticated } = useAuth();
+  const { searchQuery, dateRange, accountFilter, statusFilter } = useContext(DashboardFilterContext);
 
   const { data: activities, isLoading } = useQuery({
     queryKey: ["/api/dashboard/recent-activities"],
     enabled: isAuthenticated,
   });
+
+  // Filter activities based on search and filters
+  const filteredActivities = useMemo(() => {
+    if (!activities) return [];
+    
+    return activities.filter((activity: any) => {
+      // Search filter
+      if (searchQuery && !activity.message.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+      
+      // Date range filter
+      if (dateRange !== 'all') {
+        const activityDate = new Date(activity.createdAt);
+        const now = new Date();
+        
+        switch (dateRange) {
+          case 'today':
+            if (activityDate.toDateString() !== now.toDateString()) return false;
+            break;
+          case 'week':
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            if (activityDate < weekAgo) return false;
+            break;
+          case 'month':
+            if (activityDate.getMonth() !== now.getMonth() || activityDate.getFullYear() !== now.getFullYear()) return false;
+            break;
+          case 'quarter':
+            const quarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+            if (activityDate < quarterStart) return false;
+            break;
+          case 'year':
+            if (activityDate.getFullYear() !== now.getFullYear()) return false;
+            break;
+        }
+      }
+      
+      return true;
+    });
+  }, [activities, searchQuery, dateRange, accountFilter, statusFilter]);
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -84,13 +127,15 @@ export default function RecentActivities() {
               </div>
             ))}
           </div>
-        ) : !activities || activities.length === 0 ? (
+        ) : !filteredActivities || filteredActivities.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500">No recent activities</p>
+            <p className="text-gray-500">
+              {searchQuery || dateRange !== 'all' ? 'No activities match your filters' : 'No recent activities'}
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {activities.map((activity: any) => (
+            {filteredActivities.map((activity: any) => (
               <div
                 key={activity.id}
                 className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"

@@ -1,16 +1,44 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useContext, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DashboardFilterContext } from "@/pages/dashboard";
 
 export default function PromotionCalendarWidget() {
   const { isAuthenticated } = useAuth();
+  const { searchQuery, accountFilter, statusFilter } = useContext(DashboardFilterContext);
 
   const { data: upcomingPromotions, isLoading } = useQuery({
     queryKey: ["/api/promotions/upcoming"],
     enabled: isAuthenticated,
   });
+
+  // Filter promotions based on search and filters
+  const filteredPromotions = useMemo(() => {
+    if (!upcomingPromotions) return [];
+    
+    return upcomingPromotions.filter((promo: any) => {
+      // Search filter
+      if (searchQuery && !promo.name.toLowerCase().includes(searchQuery.toLowerCase()) 
+          && !promo.account?.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+      
+      // Account filter
+      if (accountFilter !== 'all' && promo.account?.name.toLowerCase() !== accountFilter) {
+        return false;
+      }
+      
+      // Status filter
+      if (statusFilter !== 'all' && promo.status !== statusFilter) {
+        return false;
+      }
+      
+      return true;
+    });
+  }, [upcomingPromotions, searchQuery, accountFilter, statusFilter]);
 
   // Generate calendar grid for current month
   const today = new Date();
@@ -32,9 +60,9 @@ export default function PromotionCalendarWidget() {
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   const getPromotionsForDay = (date: Date) => {
-    if (!upcomingPromotions) return [];
+    if (!filteredPromotions) return [];
     
-    return upcomingPromotions.filter((promo: any) => {
+    return filteredPromotions.filter((promo: any) => {
       const startDate = new Date(promo.startDate);
       const endDate = new Date(promo.endDate);
       return date >= startDate && date <= endDate;
