@@ -7,11 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { DollarSign, TrendingUp, Plus } from "lucide-react";
+import BudgetAllocationDialog from "@/components/budgets/budget-allocation-dialog";
 import type { BudgetAllocation, Account } from "@shared/schema";
 
 export default function BudgetManagement() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [selectedQuarter, setSelectedQuarter] = useState("Q3-2024");
+  const [showAllocationDialog, setShowAllocationDialog] = useState(false);
 
   const { data: budgets, isLoading } = useQuery({
     queryKey: ["/api/budgets"],
@@ -45,7 +47,10 @@ export default function BudgetManagement() {
               <h2 className="text-2xl font-semibold text-gray-900">Budget Management</h2>
               <p className="text-sm text-gray-600">Track and manage promotional budgets across accounts</p>
             </div>
-            <Button className="bg-primary text-white hover:bg-blue-700">
+            <Button 
+              className="bg-primary text-white hover:bg-blue-700"
+              onClick={() => setShowAllocationDialog(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Allocate Budget
             </Button>
@@ -188,6 +193,11 @@ export default function BudgetManagement() {
           </Card>
         </main>
       </div>
+      
+      <BudgetAllocationDialog
+        isOpen={showAllocationDialog}
+        onClose={() => setShowAllocationDialog(false)}
+      />
     </div>
   );
 }
