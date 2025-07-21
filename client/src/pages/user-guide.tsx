@@ -390,6 +390,47 @@ export default function UserGuide() {
               <div className="flex items-start gap-3">
                 <Badge variant="outline" className="mt-1">2</Badge>
                 <div className="space-y-2">
+                  <h4 className="font-semibold">Key Metric Calculations</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Understanding how the platform calculates critical performance indicators.
+                  </p>
+                  <div className="space-y-3">
+                    <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg text-sm">
+                      <strong className="text-blue-800 dark:text-blue-200">ROI (Return on Investment):</strong>
+                      <p className="mt-1 text-blue-700 dark:text-blue-300">ROI = ((Incremental Sales - Promotion Cost) / Promotion Cost) × 100</p>
+                      <p className="text-xs mt-1">Where Incremental Sales = Total Sales during promotion - Baseline Sales</p>
+                    </div>
+                    
+                    <div className="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg text-sm">
+                      <strong className="text-green-800 dark:text-green-200">Sales Lift:</strong>
+                      <p className="mt-1 text-green-700 dark:text-green-300">Sales Lift % = ((Promotion Sales - Baseline Sales) / Baseline Sales) × 100</p>
+                      <p className="text-xs mt-1">Measures the percentage increase in sales volume during the promotion period</p>
+                    </div>
+                    
+                    <div className="bg-purple-50 dark:bg-purple-950/20 p-3 rounded-lg text-sm">
+                      <strong className="text-purple-800 dark:text-purple-200">Budget Utilization:</strong>
+                      <p className="mt-1 text-purple-700 dark:text-purple-300">Utilization % = (Spent Amount / Allocated Amount) × 100</p>
+                      <p className="text-xs mt-1">Tracks how much of the allocated budget has been consumed</p>
+                    </div>
+                    
+                    <div className="bg-orange-50 dark:bg-orange-950/20 p-3 rounded-lg text-sm">
+                      <strong className="text-orange-800 dark:text-orange-200">Incremental Volume:</strong>
+                      <p className="mt-1 text-orange-700 dark:text-orange-300">Incremental Volume = Total Units Sold - (Baseline Rate × Days in Promotion)</p>
+                      <p className="text-xs mt-1">Additional units sold specifically due to the promotion</p>
+                    </div>
+                    
+                    <div className="bg-red-50 dark:bg-red-950/20 p-3 rounded-lg text-sm">
+                      <strong className="text-red-800 dark:text-red-200">Trade Spend Efficiency:</strong>
+                      <p className="mt-1 text-red-700 dark:text-red-300">Efficiency = Incremental Gross Profit / Total Trade Investment</p>
+                      <p className="text-xs mt-1">Measures profit generated per dollar of trade spending</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Badge variant="outline" className="mt-1">3</Badge>
+                <div className="space-y-2">
                   <h4 className="font-semibold">Comparative Analysis</h4>
                   <p className="text-sm text-muted-foreground">
                     Compare performance across different promotion types, accounts, and time periods.
