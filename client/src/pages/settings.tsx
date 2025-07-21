@@ -188,8 +188,8 @@ export default function Settings() {
         lastName: (user as any).lastName || "",
         email: (user as any).email || "",
         role: isAdminUser ? "Admin" : "Sales Manager",
-        department: isAdminUser ? "IT" : "",
-        phone: "",
+        department: isAdminUser ? "IT" : (user as any).department || "",
+        phone: (user as any).phone || "",
       });
     }
   }, [isAuthenticated, isLoading, user, toast]);
