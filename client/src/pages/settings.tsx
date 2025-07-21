@@ -181,14 +181,13 @@ export default function Settings() {
     }
 
     if (user) {
-      // Check if this is the admin user and set appropriate role/department
-      const isAdminUser = (user as any).email === "eduardodmoraes@gmail.com";
+      // Load actual user data from database, including role and department
       setProfileData({
         firstName: (user as any).firstName || "",
         lastName: (user as any).lastName || "",
         email: (user as any).email || "",
-        role: isAdminUser ? "Admin" : "Sales Manager",
-        department: isAdminUser ? "IT" : (user as any).department || "",
+        role: (user as any).role || "Sales Manager",
+        department: (user as any).department || "",
         phone: (user as any).phone || "",
       });
     }
@@ -196,6 +195,8 @@ export default function Settings() {
 
   const handleSaveProfile = async () => {
     try {
+      // Only update fields that users are allowed to modify
+      // Role and department can only be changed by Admin in Admin panel
       await updateProfileMutation.mutateAsync({
         firstName: profileData.firstName,
         lastName: profileData.lastName,
@@ -320,18 +321,15 @@ export default function Settings() {
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label htmlFor="role">Role</Label>
-                            <Select value={profileData.role} onValueChange={(value) => setProfileData(prev => ({ ...prev, role: value }))}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Sales Manager">Sales Manager</SelectItem>
-                                <SelectItem value="Finance Analyst">Finance Analyst</SelectItem>
-                                <SelectItem value="Trade Development">Trade Development</SelectItem>
-                                <SelectItem value="Executive">Executive</SelectItem>
-                                <SelectItem value="Admin">Admin (Full Access)</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <Input
+                              id="role"
+                              value={profileData.role}
+                              readOnly
+                              className="bg-gray-50 text-gray-600 cursor-not-allowed"
+                            />
+                            <p className="text-xs text-gray-500">
+                              Role can only be changed by administrators in the Admin Users panel.
+                            </p>
                             {profileData.role === "Admin" && (
                               <p className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
                                 Admin role has full access to all features and settings in the TPM platform.
@@ -343,9 +341,13 @@ export default function Settings() {
                             <Input
                               id="department"
                               value={profileData.department}
-                              onChange={(e) => setProfileData(prev => ({ ...prev, department: e.target.value }))}
+                              readOnly
+                              className="bg-gray-50 text-gray-600 cursor-not-allowed"
                               placeholder="e.g., Trade Marketing"
                             />
+                            <p className="text-xs text-gray-500">
+                              Department can only be changed by administrators in the Admin Users panel.
+                            </p>
                           </div>
                         </div>
 

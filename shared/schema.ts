@@ -45,7 +45,7 @@ export const users = pgTable("users", {
 // User settings table for storing preferences
 export const userSettings = pgTable("user_settings", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").references(() => users.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull().unique(),
   notifications: jsonb("notifications").default({
     emailAlerts: true,
     pushNotifications: true,
