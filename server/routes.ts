@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated, isApiAuthenticated } from "./replitAuth";
 import {
   insertPromotionSchema,
   insertAccountSchema,
@@ -84,7 +84,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/accounts', isAuthenticated, async (req, res) => {
+  app.post('/api/accounts', isApiAuthenticated, async (req, res) => {
     try {
       const validatedData = insertAccountSchema.parse(req.body);
       const account = await storage.createAccount(validatedData);
@@ -106,7 +106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/products', isAuthenticated, async (req, res) => {
+  app.post('/api/products', isApiAuthenticated, async (req, res) => {
     try {
       const validatedData = insertProductSchema.parse(req.body);
       const product = await storage.createProduct(validatedData);
@@ -152,7 +152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/promotions', isAuthenticated, async (req: any, res) => {
+  app.post('/api/promotions', isApiAuthenticated, async (req: any, res) => {
     try {
       const validatedData = insertPromotionSchema.parse({
         ...req.body,
@@ -305,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/sales-data', isAuthenticated, async (req, res) => {
+  app.post('/api/sales-data', isApiAuthenticated, async (req, res) => {
     try {
       const validatedData = insertSalesDataSchema.parse(req.body);
       const salesData = await storage.createSalesData(validatedData);

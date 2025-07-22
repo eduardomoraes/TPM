@@ -156,3 +156,26 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     return;
   }
 };
+
+// API Key authentication middleware for external systems (like Databricks)
+export const isApiAuthenticated: RequestHandler = async (req, res, next) => {
+  const apiKey = (req.headers['x-api-key'] as string) || (req.headers['authorization'] as string)?.replace('Bearer ', '');
+  
+  // Check if it's a valid API key (set your API keys in environment variables)
+  const validApiKeys = process.env.API_KEYS?.split(',') || ['databricks-api-key-2024', 'external-system-key'];
+  
+  if (apiKey && validApiKeys.includes(apiKey)) {
+    // Set a fake user object for API requests
+    (req as any).user = { 
+      claims: { 
+        sub: 'external-api-system',
+        email: 'api@external.com'
+      },
+      expires_at: Math.floor(Date.now() / 1000) + 3600 // 1 hour from now
+    };
+    return next();
+  }
+  
+  // Fall back to regular authentication
+  return isAuthenticated(req, res, next);
+};
