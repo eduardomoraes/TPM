@@ -176,7 +176,9 @@ function Analytics() {
 
   // Consolidated analysis by account (using filtered data)
   const consolidatedByAccount = useMemo(() => {
-    if (!filteredPromotions || !filteredSalesData) return [];
+    if (!filteredPromotions || !filteredSalesData || filteredPromotions.length === 0) return [];
+    
+    console.log('Consolidating by account:', { promotions: filteredPromotions.length, sales: filteredSalesData.length });
     
     const accountMap = new Map();
     
@@ -198,8 +200,13 @@ function Analytics() {
       accountData.totalBudget += Number(promo.budget) || 0;
       accountData.promotionCount += 1;
       
-      // Find related sales data
-      const relatedSales = filteredSalesData.filter((sale: any) => sale.promotion?.accountId === promo.accountId);
+      // Find related sales data - try multiple matching strategies
+      const relatedSales = filteredSalesData.filter((sale: any) => 
+        sale.promotion?.accountId === promo.accountId || 
+        sale.accountId === promo.accountId ||
+        sale.promotionId === promo.id
+      );
+      
       relatedSales.forEach((sale: any) => {
         accountData.totalSales += Number(sale.incrementalSales) || 0;
         accountData.totalUnitsLift += Number(sale.unitsLift) || 0;
@@ -218,7 +225,9 @@ function Analytics() {
 
   // Consolidated analysis by promo type (using filtered data)
   const consolidatedByPromoType = useMemo(() => {
-    if (!filteredPromotions || !filteredSalesData) return [];
+    if (!filteredPromotions || !filteredSalesData || filteredPromotions.length === 0) return [];
+    
+    console.log('Consolidating by promo type:', { promotions: filteredPromotions.length, sales: filteredSalesData.length });
     
     const typeMap = new Map();
     
@@ -241,8 +250,12 @@ function Analytics() {
       typeData.promotionCount += 1;
       typeData.accounts.add(promo.account?.name || 'Unknown');
       
-      // Find related sales data
-      const relatedSales = filteredSalesData.filter((sale: any) => sale.promotionId === promo.id);
+      // Find related sales data - try multiple matching strategies
+      const relatedSales = filteredSalesData.filter((sale: any) => 
+        sale.promotionId === promo.id ||
+        sale.promotion?.id === promo.id ||
+        (sale.accountId === promo.accountId && sale.promotion?.promotionType === promo.promotionType)
+      );
       relatedSales.forEach((sale: any) => {
         typeData.totalSales += Number(sale.incrementalSales) || 0;
         typeData.totalUnitsLift += Number(sale.unitsLift) || 0;
@@ -482,6 +495,9 @@ function Analytics() {
               {!currentConsolidatedData || currentConsolidatedData.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">No data available for consolidated analysis</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Debug: Promotions: {filteredPromotions?.length || 0}, Sales: {filteredSalesData?.length || 0}
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">

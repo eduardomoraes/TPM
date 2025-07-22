@@ -77,7 +77,7 @@ export const userSettings = pgTable("user_settings", {
     roiTarget: 150,
   }),
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // TPM Core Tables
