@@ -11,6 +11,7 @@ import {
   insertSalesDataSchema,
   insertActivitySchema,
   insertUserSettingsSchema,
+  insertApiKeySchema,
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -470,6 +471,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating profile:", error);
       res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  // API Key Management routes (Admin only)
+  app.get('/api/admin/api-keys', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const apiKeys = await storage.getApiKeys();
+      res.json(apiKeys);
+    } catch (error) {
+      console.error("Error fetching API keys:", error);
+      res.status(500).json({ message: "Failed to fetch API keys" });
+    }
+  });
+
+  app.post('/api/admin/api-keys', isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const apiKeyData = insertApiKeySchema.parse(req.body);
+      const createdBy = req.user.claims.sub;
+      const apiKey = await storage.createApiKey(apiKeyData, createdBy);
+      res.status(201).json(apiKey);
+    } catch (error) {
+      console.error("Error creating API key:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create API key" });
+    }
+  });
+
+  app.delete('/api/admin/api-keys/:id', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const deleted = await storage.deleteApiKey(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "API key not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting API key:", error);
+      res.status(500).json({ message: "Failed to delete API key" });
     }
   });
 

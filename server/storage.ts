@@ -8,6 +8,7 @@ import {
   deductions,
   salesData,
   activities,
+  apiKeys,
   type User,
   type UpsertUser,
   type UserSettings,
@@ -26,6 +27,8 @@ import {
   type InsertSalesData,
   type Activity,
   type InsertActivity,
+  type ApiKey,
+  type InsertApiKey,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sum, count, sql } from "drizzle-orm";
@@ -589,6 +592,45 @@ export class DatabaseStorage implements IStorage {
       roi: Number(row.roi || 0),
       salesLift: Number(row.salesLift || 0),
     }));
+  }
+
+  // API Key operations
+  async getApiKeys(): Promise<ApiKey[]> {
+    return await db.select().from(apiKeys).orderBy(desc(apiKeys.createdAt));
+  }
+
+  async createApiKey(apiKeyInput: InsertApiKey, createdBy: string): Promise<ApiKey> {
+    const id = Date.now().toString(36) + Math.random().toString(36).substring(2);
+    const key = 'tpm_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 15);
+    
+    const [newApiKey] = await db.insert(apiKeys).values({
+      ...apiKeyInput,
+      id,
+      key,
+      createdBy,
+    }).returning();
+    return newApiKey;
+  }
+
+  async deleteApiKey(keyId: string): Promise<boolean> {
+    const result = await db.delete(apiKeys).where(eq(apiKeys.id, keyId));
+    return result.rowCount > 0;
+  }
+
+  async validateApiKey(key: string): Promise<ApiKey | null> {
+    const [apiKey] = await db.select().from(apiKeys)
+      .where(eq(apiKeys.key, key))
+      .where(eq(apiKeys.isActive, true))
+      .limit(1);
+    
+    if (apiKey) {
+      // Update last used timestamp
+      await db.update(apiKeys)
+        .set({ lastUsed: new Date() })
+        .where(eq(apiKeys.id, apiKey.id));
+    }
+    
+    return apiKey || null;
   }
 }
 

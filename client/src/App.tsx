@@ -14,6 +14,7 @@ import Analytics from "@/pages/analytics";
 import UserGuide from "@/pages/user-guide";
 import Settings from "@/pages/settings";
 import AdminUsers from "@/pages/admin-users";
+import ApiManagement from "@/pages/api-management";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -34,6 +35,7 @@ function Router() {
           <Route path="/guide" component={UserGuide} />
           <Route path="/settings" component={Settings} />
           <Route path="/admin/users" component={AdminUsers} />
+          <Route path="/admin/api-keys" component={ApiManagement} />
         </>
       )}
       <Route component={NotFound} />
