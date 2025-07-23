@@ -221,7 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/budgets', isAuthenticated, async (req, res) => {
+  app.post('/api/budgets', isApiAuthenticated, async (req, res) => {
     try {
       const { action, ...data } = req.body;
       const validatedData = insertBudgetAllocationSchema.parse(data);
@@ -260,7 +260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/deductions', isAuthenticated, async (req, res) => {
+  app.post('/api/deductions', isApiAuthenticated, async (req, res) => {
     try {
       const validatedData = insertDeductionSchema.parse(req.body);
       const deduction = await storage.createDeduction(validatedData);

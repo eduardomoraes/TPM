@@ -159,21 +159,42 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 
 // API Key authentication middleware for external systems (like Databricks)
 export const isApiAuthenticated: RequestHandler = async (req, res, next) => {
-  const apiKey = (req.headers['x-api-key'] as string) || (req.headers['authorization'] as string)?.replace('Bearer ', '');
+  const apiKeyHeader = req.headers['x-api-key'] as string;
+  const authHeader = req.headers['authorization'] as string;
+  const apiKey = apiKeyHeader || authHeader?.replace('Bearer ', '');
   
-  // Check if it's a valid API key (set your API keys in environment variables)
-  const validApiKeys = process.env.API_KEYS?.split(',') || ['databricks-api-key-2024', 'external-system-key'];
+  console.log("Headers received:", {
+    'x-api-key': apiKeyHeader,
+    'authorization': authHeader,
+    'extracted-key': apiKey
+  });
   
-  if (apiKey && validApiKeys.includes(apiKey)) {
-    // Set a fake user object for API requests
-    (req as any).user = { 
-      claims: { 
-        sub: 'external-api-system',
-        email: 'api@external.com'
-      },
-      expires_at: Math.floor(Date.now() / 1000) + 3600 // 1 hour from now
-    };
-    return next();
+  if (apiKey) {
+    try {
+      // Import storage here to avoid circular dependency
+      const { storage } = await import('./storage');
+      const validApiKey = await storage.validateApiKey(apiKey);
+      
+      if (validApiKey) {
+        // Set a fake user object for API requests
+        (req as any).user = { 
+          claims: { 
+            sub: 'external-api-system',
+            email: 'api@external.com'
+          },
+          expires_at: Math.floor(Date.now() / 1000) + 3600 // 1 hour from now
+        };
+        (req as any).apiKey = validApiKey;
+        console.log("✅ API Key authenticated:", validApiKey.name);
+        return next();
+      } else {
+        console.log("❌ Invalid API key provided");
+      }
+    } catch (error) {
+      console.error("API key authentication error:", error);
+    }
+  } else {
+    console.log("No API key provided in headers");
   }
   
   // Fall back to regular authentication

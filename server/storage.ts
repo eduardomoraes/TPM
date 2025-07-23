@@ -614,14 +614,16 @@ export class DatabaseStorage implements IStorage {
 
   async deleteApiKey(keyId: string): Promise<boolean> {
     const result = await db.delete(apiKeys).where(eq(apiKeys.id, keyId));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   async validateApiKey(key: string): Promise<ApiKey | null> {
+    console.log("Validating API key:", key);
     const [apiKey] = await db.select().from(apiKeys)
-      .where(eq(apiKeys.key, key))
-      .where(eq(apiKeys.isActive, true))
+      .where(and(eq(apiKeys.key, key), eq(apiKeys.isActive, true)))
       .limit(1);
+    
+    console.log("Found API key:", apiKey ? apiKey.name : "None");
     
     if (apiKey) {
       // Update last used timestamp
