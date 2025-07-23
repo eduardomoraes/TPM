@@ -155,9 +155,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/promotions', isApiAuthenticated, async (req: any, res) => {
     try {
+      // For API calls, use the API key creator's ID or a default admin ID
+      const createdBy = req.apiKey ? req.apiKey.createdBy : req.user.claims.sub;
+      
       const validatedData = insertPromotionSchema.parse({
         ...req.body,
-        createdBy: req.user.claims.sub,
+        createdBy: createdBy,
       });
       const promotion = await storage.createPromotion(validatedData);
       

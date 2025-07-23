@@ -176,10 +176,10 @@ export const isApiAuthenticated: RequestHandler = async (req, res, next) => {
       const validApiKey = await storage.validateApiKey(apiKey);
       
       if (validApiKey) {
-        // Set a fake user object for API requests
+        // Set a user object pointing to the API key creator for API requests
         (req as any).user = { 
           claims: { 
-            sub: 'external-api-system',
+            sub: validApiKey.createdBy,  // Use the actual creator's ID
             email: 'api@external.com'
           },
           expires_at: Math.floor(Date.now() / 1000) + 3600 // 1 hour from now

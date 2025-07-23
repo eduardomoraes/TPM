@@ -130,6 +130,20 @@ The system uses a comprehensive PostgreSQL schema with the following core entiti
   - User status management (active/inactive)
   - Advanced filtering and search capabilities
   - Export/import functionality for user data
+- **Smart API Key Management System** (Admin-only access):
+  - Database-driven API key generation and management
+  - Secure key creation with auto-generated unique identifiers
+  - Integration guide with copy-paste code examples for external systems
+  - Support for Databricks, cURL, and Power BI integrations
+  - Comprehensive API endpoints documentation
+  - Key usage tracking and last-used timestamps
+  - Visual management interface with show/hide functionality
+- **External System Integration**:
+  - API key authentication middleware for secure external access
+  - RESTful endpoints for accounts, products, promotions, budgets, deductions, and sales data
+  - Complete Databricks integration with Python code examples
+  - Foreign key relationship handling for data integrity
+  - Error handling and validation for external API calls
 - Responsive design with mobile support
 - Real-time data updates and notifications
 
