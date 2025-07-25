@@ -29,7 +29,7 @@ export const sessions = pgTable(
 // User storage table (mandatory for Replit Auth)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
+  email: varchar("email").unique().notNull(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
@@ -37,6 +37,10 @@ export const users = pgTable("users", {
   department: varchar("department"),
   phone: varchar("phone"),
   isActive: boolean("is_active").default(true),
+  provider: varchar("provider"), // 'google', 'microsoft', 'replit', 'local'
+  providerId: varchar("provider_id"), // External provider ID
+  hashedPassword: varchar("hashed_password"), // For local auth only
+  emailVerified: boolean("email_verified").default(false),
   lastLogin: timestamp("last_login"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -295,6 +299,7 @@ export const insertUserSettingsSchema = createInsertSchema(userSettings).omit({
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
 
 // User Settings types
 export type UserSettings = typeof userSettings.$inferSelect;

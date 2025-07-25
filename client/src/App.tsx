@@ -5,6 +5,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/landing";
+import Login from "@/pages/login";
+import Register from "@/pages/register";
+import CompleteRegistration from "@/pages/complete-registration";
 import Dashboard from "@/pages/dashboard";
 import PromotionCalendar from "@/pages/promotion-calendar";
 import BudgetManagement from "@/pages/budget-management";
@@ -18,12 +21,29 @@ import ApiManagement from "@/pages/api-management";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+      {/* Public routes */}
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+      
+      {/* Registration completion route (for OAuth users without role) */}
+      {isAuthenticated && user && !user.role && (
+        <Route path="/complete-registration" component={CompleteRegistration} />
+      )}
+      
+      {/* Protected routes */}
+      {isLoading ? (
+        <Route path="/" component={() => <div className="flex items-center justify-center min-h-screen">Loading...</div>} />
+      ) : !isAuthenticated ? (
+        <>
+          <Route path="/" component={Landing} />
+          <Route component={NotFound} />
+        </>
+      ) : !user?.role ? (
+        <Route path="*" component={CompleteRegistration} />
       ) : (
         <>
           <Route path="/" component={Dashboard} />
@@ -36,9 +56,9 @@ function Router() {
           <Route path="/settings" component={Settings} />
           <Route path="/admin/users" component={AdminUsers} />
           <Route path="/admin/api-keys" component={ApiManagement} />
+          <Route component={NotFound} />
         </>
       )}
-      <Route component={NotFound} />
     </Switch>
   );
 }

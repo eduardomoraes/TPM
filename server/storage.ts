@@ -52,6 +52,10 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   
+  // OAuth user operations
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByProviderId(provider: string, providerId: string): Promise<User | undefined>;
+  
   // Admin user management operations
   getAllUsers(): Promise<SafeUser[]>;
   getUserById(id: string): Promise<User | undefined>;
@@ -146,6 +150,19 @@ export class DatabaseStorage implements IStorage {
         },
       })
       .returning();
+    return user;
+  }
+
+  // OAuth user operations
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async getUserByProviderId(provider: string, providerId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(
+      and(eq(users.provider, provider), eq(users.providerId, providerId))
+    );
     return user;
   }
 

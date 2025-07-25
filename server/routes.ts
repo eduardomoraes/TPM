@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated, isApiAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated, requireRole } from "./auth";
 import {
   insertPromotionSchema,
   insertAccountSchema,
@@ -15,21 +15,36 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 
+// API authentication middleware for external systems
+export const isApiAuthenticated = async (req: any, res: any, next: any) => {
+  const apiKey = req.headers['x-api-key'];
+  if (!apiKey) {
+    return res.status(401).json({ message: 'API key required' });
+  }
+
+  try {
+    const key = await storage.getApiKeyByKey(apiKey);
+    if (!key) {
+      return res.status(401).json({ message: 'Invalid API key' });
+    }
+
+    // Update last used timestamp
+    await storage.updateApiKeyLastUsed(key.id);
+    
+    // Attach API key info to request
+    req.apiKey = key;
+    next();
+  } catch (error) {
+    console.error('API authentication error:', error);
+    res.status(500).json({ message: 'Authentication failed' });
+  }
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // The auth routes are now handled in the auth.ts file
 
   // Dashboard & Analytics routes
   app.get('/api/dashboard/kpis', isAuthenticated, async (req, res) => {
