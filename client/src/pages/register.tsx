@@ -41,7 +41,7 @@ export default function Register() {
         throw new Error("Passwords do not match");
       }
       const { confirmPassword, ...dataToSend } = userData;
-      return apiRequest("/api/auth/register", "POST", dataToSend);
+      return apiRequest("POST", "/api/auth/register", dataToSend);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
