@@ -37,13 +37,28 @@ export default function Register() {
 
   const registerMutation = useMutation({
     mutationFn: async (userData: typeof formData) => {
+      console.log("Registration attempt with data:", userData);
+      
       if (userData.password !== userData.confirmPassword) {
         throw new Error("Passwords do not match");
       }
+      
+      if (!userData.role) {
+        throw new Error("Please select a role");
+      }
+      
+      if (userData.password.length < 6) {
+        throw new Error("Password must be at least 6 characters");
+      }
+      
       const { confirmPassword, ...dataToSend } = userData;
-      return apiRequest("POST", "/api/auth/register", dataToSend);
+      console.log("Sending data to API:", dataToSend);
+      
+      const response = await apiRequest("POST", "/api/auth/register", dataToSend);
+      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Registration successful:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Registration Successful",
@@ -52,6 +67,7 @@ export default function Register() {
       navigate("/");
     },
     onError: (error: any) => {
+      console.error("Registration error:", error);
       toast({
         title: "Registration Failed",
         description: error.message || "Something went wrong",
@@ -62,6 +78,7 @@ export default function Register() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Form submitted with data:", formData);
     registerMutation.mutate(formData);
   };
 
