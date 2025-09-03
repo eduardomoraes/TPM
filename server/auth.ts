@@ -169,7 +169,7 @@ export async function setupAuth(app: Express) {
       await storage.updateUser(user.id, { lastLogin: new Date() });
       return done(null, user);
     } catch (error) {
-      return done(error, null);
+      return done(error, false);
     }
   }));
 
