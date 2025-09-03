@@ -22,9 +22,9 @@ export default function Login() {
     mutationFn: async (credentials: { email: string; password: string }) => {
       return apiRequest("POST", "/api/auth/login", credentials);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      navigate("/");
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      window.location.href = "/"; // Force full page reload to ensure auth state is fresh
     },
     onError: (error: any) => {
       toast({

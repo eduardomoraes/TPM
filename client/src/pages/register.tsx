@@ -57,14 +57,14 @@ export default function Register() {
       const response = await apiRequest("POST", "/api/auth/register", dataToSend);
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("Registration successful:", data);
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Registration Successful",
         description: "Welcome to Trade Promotion Management!",
       });
-      navigate("/");
+      window.location.href = "/"; // Force full page reload to ensure auth state is fresh
     },
     onError: (error: any) => {
       console.error("Registration error:", error);
