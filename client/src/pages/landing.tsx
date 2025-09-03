@@ -4,7 +4,7 @@ import { TrendingUp, Calendar, DollarSign, BarChart3, Target, Users } from "luci
 
 export default function Landing() {
   const handleLogin = () => {
-    window.location.href = "/api/login";
+    window.location.href = "/login";
   };
 
   return (
