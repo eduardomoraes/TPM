@@ -23,8 +23,12 @@ export default function Login() {
       return apiRequest("POST", "/api/auth/login", credentials);
     },
     onSuccess: async () => {
+      // Invalidate and refetch the auth query to get updated user data
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      window.location.href = "/"; // Force full page reload to ensure auth state is fresh
+      // Refetch the user data to ensure it's up to date
+      await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
+      // Navigate to dashboard
+      navigate("/");
     },
     onError: (error: any) => {
       toast({
