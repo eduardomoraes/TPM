@@ -1,0 +1,205 @@
+245Tracking Prevention blocked access to storage for <URL>.
+42The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+42The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+42The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+DataLeaderPortfolio:1  The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+DataLeaderPortfolio:1  The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+DataLeaderPortfolio:1  The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+_app-6c982e60094fdc60.js:38 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+_app-6c982e60094fdc60.js:38 [LaunchDarkly] LaunchDarkly client initialized
+DataLeaderPortfolio:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+/account#billing:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+8_app-6c982e60094fdc60.js:38  If you do not provide children, you must specify an aria-label for accessibility
+(anonymous) @ _app-6c982e60094fdc60.js:38
+19Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+framework-a26b7215d64a0c0e.js:1  Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Unrecognized feature: 'battery'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Unrecognized feature: 'layout-animations'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Unrecognized feature: 'navigation-override'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Unrecognized feature: 'oversized-images'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Unrecognized feature: 'publickey-credentials'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Unrecognized feature: 'speaker-selection'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Unrecognized feature: 'unoptimized-images'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Unrecognized feature: 'unsized-media'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Unrecognized feature: 'pointer-lock'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-a26b7215d64a0c0e.js:1
+framework-a26b7215d64a0c0e.js:1  Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-a26b7215d64a0c0e.js:1
+TradePromoManager:1  WebGL: CONTEXT_LOST_WEBGL: loseContext: context lost
+_app-6c982e60094fdc60.js:38 webglcontextlost event received
+_app-6c982e60094fdc60.js:38  webgl context not restored; firing onContextLoss
+(anonymous) @ _app-6c982e60094fdc60.js:38
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 2
+6504-6dea09192f2febb7.js:1  WebSocket connection to 'wss://eval.picard.platform.replit.com/wsv2/v2.public.Q2dZSXlkM2h4UVlTQmdqbytlSEZCaUlHY0dsallYSmtNQUE2MWdFS0pHSmlORE0xTWpCbUxUaGxaakV0TkdJeE5TMWhOelZpTFRVek9EY3lORE13TUdRMVl4SURibWw0R2hoeVpYQnNhWFF0Y21Wd2JDMW1hV3hsY3kxd2FXTmhjbVFpRVZSeVlXUmxVSEp2Ylc5TllXNWhaMlZ5S2c5RlpIVmhjbVJ2VFc5eVlXVnpNVFpDVkFvWmNtVndiR2wwTFhKbGNHd3RZbXh2WTJ0ekxYQnBZMkZ5WkJJWGNtVndiR2wwTFhKbGNHd3RiV1YwWVMxd2FXTmhjbVFhSG5KbGNHeHBkQzF0WVhKbllYSnBibVV0WW14dlkydHpMWEJwWTJGeVpFb0hDSnpzaGdjUUFWQUFXZ2hsZUhCc2IzSmxjbmdBVWlNSUFSQ0FnSUNBSUJrQUFBQUFBQUFRUUNFQUFBQUFBQUFRUUNpQWdJQ0F5QUV3QW1BQWFoWUluT3lHQnhJUFJXUjFZWEprYjAxdmNtRmxjekUyZ2dFQ0tnQ2FBUW9LQ0RBdU1DNHhOekF6b0FFQi-K393PLVfmZfa9z1ND4XoiYWNHAK12XFQlo5pkaP7fwYEUlArxIfkXcKfNw3O47QqwIiRTAiXdmUot6Y6L5gI.Q2dad2NtOWtPak1pQ25KbGNHeHBkQzVqYjIwPQ' failed: Error during WebSocket handshake: Unexpected response code: 502
+connect @ 6504-6dea09192f2febb7.js:1
+TradePromoManager:1  WebGL: CONTEXT_LOST_WEBGL: loseContext: context lost
+_app-6c982e60094fdc60.js:38 webglcontextlost event received
+_app-6c982e60094fdc60.js:38  webglcontextrestored event received
+(anonymous) @ _app-6c982e60094fdc60.js:38
+24WebGL: INVALID_OPERATION: delete: object does not belong to this context
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 2
+stallwart.build.js:1 stallwart: failed ping 3
+stallwart.build.js:1 stallwart: failed ping 4
+stallwart.build.js:1 stallwart: failed ping 1
+logs.browser-intake-us5-datadoghq.com/api/v2/logs?ddsource=browser&ddtags=sdk_version%3A4.46.0%2Capi%3Afetch%2Cenv%3Aproduction%2Cservice%3Awebsite%2Cversion%3Ab3eded83&dd-api-key=pub31a5047a3a4692afb84a423db984dc57&dd-evp-origin-version=4.46.0&dd-evp-origin=browser&dd-request-id=e2e06d4e-67c8-4e6f-9fee-18c84b6736c9:1   Failed to load resource: net::ERR_NETWORK_IO_SUSPENDED
+/~:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Unrecognized feature: 'battery'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Unrecognized feature: 'layout-animations'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Unrecognized feature: 'navigation-override'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Unrecognized feature: 'unsized-media'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar5bf%3A:32  Allow attribute will take precedence over 'allowpaymentrequest'.
+bb43520f-8ef1-4b15-a75b-538724300d5c-00-6u6cx2ze6vkw.picard.replit.dev/api/auth/user:1   Failed to load resource: the server responded with a status of 401 (Unauthorized)
+bb43520f-8ef1-4b15-a75b-538724300d5c-00-6u6cx2ze6vkw.picard.replit.dev/api/auth/user:1   Failed to load resource: the server responded with a status of 401 (Unauthorized)
+VM1628 eruda.js:2 Login successful: Object
+bb43520f-8ef1-4b15-a75b-538724300d5c-00-6u6cx2ze6vkw.picard.replit.dev/api/auth/user:1   Failed to load resource: the server responded with a status of 401 (Unauthorized)
+bb43520f-8ef1-4b15-a75b-538724300d5c-00-6u6cx2ze6vkw.picard.replit.dev/api/auth/user:1   Failed to load resource: the server responded with a status of 401 (Unauthorized)
+VM1628 eruda.js:2 Auth queries refetched, navigating to dashboard
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again
+stallwart.build.js:1 stallwart: failed ping 1
+injected.js:253   GET https://bb43520f-8ef1-4b15-a75b-538724300d5c-00-6u6cx2ze6vkw.picard.replit.dev/api/auth/user 401 (Unauthorized)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+queryFn @ useAuth.ts:19
+fetchFn @ query.ts:429
+run @ retryer.ts:153
+start @ retryer.ts:218
+fetch @ query.ts:540
+executeFetch_fn @ queryObserver.ts:346
+onSubscribe @ queryObserver.ts:108
+subscribe @ subscribable.ts:11
+(anonymous) @ useBaseQuery.ts:92
+subscribeToStore @ react-dom.development.js:16139
+commitHookEffectListMount @ react-dom.development.js:23189
+commitPassiveMountOnFiber @ react-dom.development.js:24965
+commitPassiveMountEffects_complete @ react-dom.development.js:24930
+commitPassiveMountEffects_begin @ react-dom.development.js:24917
+commitPassiveMountEffects @ react-dom.development.js:24905
+flushPassiveEffectsImpl @ react-dom.development.js:27078
+flushPassiveEffects @ react-dom.development.js:27023
+performSyncWorkOnRoot @ react-dom.development.js:26115
+flushSyncCallbacks @ react-dom.development.js:12042
+commitRootImpl @ react-dom.development.js:26998
+commitRoot @ react-dom.development.js:26721
+finishConcurrentRender @ react-dom.development.js:26020
+performConcurrentWorkOnRoot @ react-dom.development.js:25848
+workLoop @ scheduler.development.js:266
+flushWork @ scheduler.development.js:239
+performWorkUntilDeadline @ scheduler.development.js:533
+Console.js:61 Login successful: {user: {…}}
+injected.js:253   GET https://bb43520f-8ef1-4b15-a75b-538724300d5c-00-6u6cx2ze6vkw.picard.replit.dev/api/auth/user 401 (Unauthorized)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+queryFn @ useAuth.ts:19
+fetchFn @ query.ts:429
+run @ retryer.ts:153
+start @ retryer.ts:218
+fetch @ query.ts:540
+(anonymous) @ queryClient.ts:313
+(anonymous) @ queryClient.ts:312
+batch @ notifyManager.ts:52
+refetchQueries @ queryClient.ts:308
+(anonymous) @ queryClient.ts:296
+batch @ notifyManager.ts:52
+invalidateQueries @ queryClient.ts:284
+onSuccess @ login.tsx:29
+execute @ mutation.ts:218
+await in execute
+mutate @ mutationObserver.ts:125
+(anonymous) @ useMutation.ts:52
+handleSubmit @ login.tsx:48
+callCallback2 @ react-dom.development.js:4164
+invokeGuardedCallbackDev @ react-dom.development.js:4213
+invokeGuardedCallback @ react-dom.development.js:4277
+invokeGuardedCallbackAndCatchFirstError @ react-dom.development.js:4291
+executeDispatch @ react-dom.development.js:9041
+processDispatchQueueItemsInOrder @ react-dom.development.js:9073
+processDispatchQueue @ react-dom.development.js:9086
+dispatchEventsForPlugins @ react-dom.development.js:9097
+(anonymous) @ react-dom.development.js:9288
+batchedUpdates$1 @ react-dom.development.js:26179
+batchedUpdates @ react-dom.development.js:3991
+dispatchEventForPluginEventSystem @ react-dom.development.js:9287
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ react-dom.development.js:6465
+dispatchEvent @ react-dom.development.js:6457
+dispatchDiscreteEvent @ react-dom.development.js:6430
+injected.js:253   GET https://bb43520f-8ef1-4b15-a75b-538724300d5c-00-6u6cx2ze6vkw.picard.replit.dev/api/auth/user 401 (Unauthorized)
+window.fetch @ Network.js:219
+apply @ injected.js:253
+queryFn @ useAuth.ts:19
+fetchFn @ query.ts:429
+run @ retryer.ts:153
+start @ retryer.ts:218
+fetch @ query.ts:540
+(anonymous) @ queryClient.ts:313
+(anonymous) @ queryClient.ts:312
+batch @ notifyManager.ts:52
+refetchQueries @ queryClient.ts:308
+onSuccess @ login.tsx:31
+await in onSuccess
+execute @ mutation.ts:218
+await in execute
+mutate @ mutationObserver.ts:125
+(anonymous) @ useMutation.ts:52
+handleSubmit @ login.tsx:48
+callCallback2 @ react-dom.development.js:4164
+invokeGuardedCallbackDev @ react-dom.development.js:4213
+invokeGuardedCallback @ react-dom.development.js:4277
+invokeGuardedCallbackAndCatchFirstError @ react-dom.development.js:4291
+executeDispatch @ react-dom.development.js:9041
+processDispatchQueueItemsInOrder @ react-dom.development.js:9073
+processDispatchQueue @ react-dom.development.js:9086
+dispatchEventsForPlugins @ react-dom.development.js:9097
+(anonymous) @ react-dom.development.js:9288
+batchedUpdates$1 @ react-dom.development.js:26179
+batchedUpdates @ react-dom.development.js:3991
+dispatchEventForPluginEventSystem @ react-dom.development.js:9287
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ react-dom.development.js:6465
+dispatchEvent @ react-dom.development.js:6457
+dispatchDiscreteEvent @ react-dom.development.js:6430
+Console.js:61 Auth queries refetched, navigating to dashboard

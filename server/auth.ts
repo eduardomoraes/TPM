@@ -32,11 +32,13 @@ export function getSession() {
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    name: 'connect.sid',
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+      secure: false, // Set to false for development in Replit
+      sameSite: 'lax',
       maxAge: sessionTtl,
+      domain: undefined, // Let the browser handle domain
     },
   });
 }
