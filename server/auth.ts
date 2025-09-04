@@ -268,7 +268,15 @@ function setupAuthRoutes(app: Express) {
     passport.authenticate('local', { failureMessage: true }),
     (req, res) => {
       const user = req.user as any;
-      res.json({ user: { id: user.id, email: user.email, role: user.role } });
+      res.json({ user: { 
+        id: user.id, 
+        email: user.email, 
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        department: user.department,
+        profileImageUrl: user.profileImageUrl
+      } });
     }
   );
 

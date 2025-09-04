@@ -24,11 +24,9 @@ export default function Login() {
       return response.json();
     },
     onSuccess: async (data) => {
-      // Invalidate and refetch the auth query to get updated user data
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      // Refetch the user data to ensure it's up to date
-      await queryClient.refetchQueries({ queryKey: ["/api/auth/user"] });
-      // Navigate to dashboard
+      // Set the user data directly in the query cache
+      queryClient.setQueryData(["/api/auth/user"], data.user);
+      // Navigate to dashboard immediately
       navigate("/");
     },
     onError: (error: any) => {
